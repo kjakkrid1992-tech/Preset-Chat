@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Preset ตอบแชท V1.6.4 — Mobile Fix + Section Headings</title>
+  <style>
+    :root{--bg:#f7f8fb;--text:#0b1220;--muted:#6b7280;--card:#fff;--card2:#f3f6fb;--line:#e5e9f2;--accent:#2563eb;--accent-2:#1e40af;--shadow:0 8px 24px rgba(18,41,76,.07);--tap:44px}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    .wrap{max-width:920px;margin:10px auto;padding:0 12px}
+    .hdr{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:6px}
+    h1{margin:0;font-size:18px;font-weight:700}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .seg{display:inline-flex;border:1px solid var(--line);background:var(--card);border-radius:999px;overflow:hidden;box-shadow:var(--shadow)}
+    .seg button{padding:8px 12px;border:0;background:transparent;color:var(--muted);cursor:pointer;min-height:var(--tap);font-size:14px}
+    .seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+    .toolbar{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg),var(--bg));padding:8px 0 10px}
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .field{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px;box-shadow:var(--shadow);min-width:260px;flex:1}
+    .field input{border:0;outline:0;background:transparent;color:var(--text);font-size:16px;min-width:160px}
+    .list{display:flex;flex-direction:column;gap:10px}
+    .section{display:flex;gap:8px;align-items:center;padding:6px 4px 0;margin-top:6px;font-weight:800}
+    .section .dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(180deg,var(--accent),var(--accent-2));opacity:.75}
+    .item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow)}
+    .i-main{min-width:0}
+    .i-title{font-weight:700;font-size:15px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .i-sub{font:12.5px ui-monospace,Menlo,Consolas,monospace;color:var(--muted)}
+    .i-actions{display:flex;gap:8px;flex-wrap:wrap}
+    button{cursor:pointer;border:1px solid var(--line);background:#fff;color:#0b1220;padding:10px 12px;border-radius:12px;font-size:14px;min-height:var(--tap)}
+    button.primary{background:var(--accent);color:#fff;border-color:var(--accent-2)}
+    .preview{display:block;margin-top:8px}
+    pre{white-space:pre-wrap;background:var(--card2);border:1px dashed var(--line);border-radius:12px;padding:12px;margin:0;max-height:160px;overflow:auto;font-size:14px}
+    .toast{position:fixed;right:12px;bottom:12px;background:#0f172a;color:#cde5ff;border:1px solid #21304d;padding:10px 12px;border-radius:10px;opacity:0;transform:translateY(8px);transition:.2s;z-index:1500;font-size:13px}
+    .toast.show{opacity:1;transform:translateY(0)}
+    /* Composer (fixed, mobile-friendly) */
+    .fab{position:fixed;right:16px;bottom:16px;z-index:1100;display:none;align-items:center;justify-content:center;width:56px;height:56px;border-radius:999px;border:0;background:var(--accent);color:#fff;font-size:22px;box-shadow:0 10px 26px rgba(37,99,235,.35);cursor:pointer}
+    .composer{position:fixed;right:18px;bottom:18px;width:380px;max-width:94vw;max-height:78vh;display:flex;flex-direction:column;z-index:1000;resize:both;overflow:hidden;border-radius:16px;box-shadow:var(--shadow);background:var(--card)}
+    .card-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--line)}
+    .card-bd{padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--card);flex:1;min-height:0}
+    .textarea{width:100%;flex:1;min-height:120px;resize:none;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--card2);font-size:15px}
+    @media (max-width: 768px){
+      .item{grid-template-columns:1fr}
+      .i-sub{display:none}
+      .fab{display:inline-flex}
+      .composer{left:0;right:0;bottom:0;width:auto;max-width:none;height:65vh;max-height:85vh;border-top-left-radius:18px;border-top-right-radius:18px;border-bottom-left-radius:0;border-bottom-right-radius:0;resize:none;transform:translateY(100%);transition:transform .25s ease-out}
+      .composer.open{transform:translateY(0)}
+    }
+    mark{background:#fff59d}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hdr">
+      <h1>Preset ตอบแชท V1.6.4 — Mobile Fix + Section Headings</h1>
+      <div class="controls">
+        <div class="seg" role="group" aria-label="สรรพนามลงท้าย">
+          <button id="tone-ka" aria-pressed="false">ค่ะ/นะคะ</button>
+          <button id="tone-krub" aria-pressed="true">ครับ/นะครับ</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="row">
+        <label class="field" style="flex:1">🔎 <input id="q" placeholder="ค้นหา: /avail, ราคา, ยกเลิก…" /></label>
+      </div>
+    </div>
+
+    <div id="list" class="list"></div>
+  </div>
+
+  <!-- Composer -->
+  <button id="fab" class="fab" aria-label="เปิดตัวช่วยร่าง">✎</button>
+  <div id="composer" class="composer" role="dialog" aria-label="ตัวช่วยร่างข้อความตอบกลับ">
+    <div class="card-hd">
+      <div class="title">📝 ตัวช่วยร่าง</div>
+      <div class="row right">
+        <button id="copyAll" class="primary">📋 คัดลอกทั้งหมด</button>
+        <button id="clearAll">ล้าง</button>
+      </div>
+    </div>
+    <div class="card-bd">
+      <textarea id="draft" class="textarea" placeholder="ข้อความที่เพิ่มจะมาแสดงที่นี่ — ปรับแก้/จัดเรียง แล้วคัดลอกไปใช้ได้ทันที"></textarea>
+      <div style="display:flex;justify-content:space-between;color:var(--muted);font-size:13px">
+        <span id="charCount">0 ตัวอักษร</span>
+        <em>ลากขอบเพื่อปรับขนาดได้</em>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEMPLATES -->
+  <template id="msg-avail">ตอนนี้มีห้องว่างค่ะ รบกวนแจ้งวันที่เช็คอิน–เช็คเอาต์ และจำนวนผู้เข้าพัก เพื่อเราจะได้ตรวจสอบและยืนยันให้อีกครั้งนะคะ</template>
+  <template id="msg-no-avail">ขออภัยค่ะ วันที่ที่ต้องการเข้าพัก ห้องเต็มแล้วนะคะ</template>
+  <template id="msg-price-house">บ้านเจอกัน — ศุกร์–เสาร์ 4,500 บาท/คืน, อาทิตย์–พฤหัสบดี 4,000 บาท/คืน (ราคารวมทุกอย่างแล้ว ไม่มีอาหารเช้า)
+• พักได้ 8 ท่าน | 4 ห้องนอน เตียงคิงส์ไซส์ 4 | ห้องน้ำ 2
+• เช็คอิน 14:00–24:00 | เช็คเอาต์ 12:00
+• พื้นที่ส่วนกลาง + ระเบียงชมวิว | นำอาหารเข้าได้ (มีจาน–ชาม 8 ชุด)
+• ที่จอดรถ 2 คัน | ฟรีจักรยาน 2 คัน
+• เตียงเสริม (จำนวนจำกัด) 300 บาท/คืน
+📍 แผนที่: https://maps.app.goo.gl/Hx1n1DxjSvUoYnWC8</template>
+  <template id="msg-price-inn1">ลอสอินน์นคร ชั้น 1 (Family Room) — 2,000 บาท/คืน (ราคารวมทุกอย่างแล้ว ไม่มีอาหารเช้า)
+• ทั้งชั้น 1 | พักได้ 6 ท่าน | 3 ห้องนอน เตียงคิงส์ไซส์ 3 | ห้องน้ำ 1
+• พื้นที่ส่วนกลาง + มุมครัวเล็ก
+• เช็คอิน 14:00–21:00 | เช็คเอาต์ 12:00
+• มีที่จอดรถภายใน | เตียงเสริม 300 บาท/คืน
+📍 แผนที่: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6</template>
+  <template id="msg-price-inn2">ลอสอินน์นคร ชั้น 2 (Two-Bedroom) — 2,500 บาท/คืน (ราคารวมทุกอย่างแล้ว ไม่มีอาหารเช้า)
+• ทั้งชั้น 2 | พักได้ 8 ท่าน | 4 ห้องนอน เตียงคิงส์ไซส์ 4 (3+1) | ห้องน้ำ 3
+• พื้นที่ส่วนกลาง + มุมครัวเล็ก
+• เช็คอิน 14:00–21:00 | เช็คเอาต์ 12:00 | หมายเหตุ: มีบันได
+• มีที่จอดรถภายใน | เตียงเสริม 300 บาท/คืน
+📍 แผนที่: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6</template>
+  <template id="msg-price-inn3">ลอสอินน์นคร ชั้น 3 (Two-Bedroom) — 2,500 บาท/คืน (ราคารวมทุกอย่างแล้ว ไม่มีอาหารเช้า)
+• ทั้งชั้น 3 | พักได้ 8 ท่าน | 4 ห้องนอน เตียงคิงส์ไซส์ 4 (3+1) | ห้องน้ำ 3
+• พื้นที่ส่วนกลาง + มุมครัวเล็ก
+• เช็คอิน 14:00–21:00 | เช็คเอาต์ 12:00 | หมายเหตุ: บันไดเท่านั้น
+• มีที่จอดรถภายใน | เตียงเสริม 300 บาท/คืน
+📍 แผนที่: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6</template>
+  <template id="msg-paid">สามารถชำระเต็มจำนวน หรือโอนมัดจำ 50% เพื่อยืนยันการจอง หลังโอนรบกวนส่งสลิป พร้อมแจ้งชื่อผู้จอง เบอร์โทร และจำนวนผู้เข้าพักค่ะ
+ธนาคาร: ทหารไทยธนชาต (TTB)
+เลขที่บัญชี: 321-2-76785-3
+ชื่อบัญชี: บจก.บ้านเจอกัน (BAANJERKAN)</template>
+  <template id="msg-checkin-house">เช็คอิน 14.00-24.00 PM
+เช็คเอาท์ 9.00-12.00 AM 
+ก่อนถึงที่พักประมาณ 30 นาทีรบกวนโทรแจ้งที่เบอร์ 
+097-2161112 หรือ 095-5153834
+(เพื่อนำกุญแจไปส่ง)</template>
+  <template id="msg-checkin-inn">เช็คอิน 14.00-21.00 PM
+เช็คเอาท์ 9.00-12.00 AM 
+> สามารถติดต่อรับกุญแจได้ที่ เคาน์เตอร์ แคชเชียร์ ร้าน เจอกันคราฟท์ (ร้านของฝากของที่พัก ชั้นล่างสุด)
+> เบอร์ติดต่อ 097-2161112 , 095-5153834</template>
+  <template id="msg-map">บ้านเจอกัน: https://maps.app.goo.gl/Hx1n1DxjSvUoYnWC8
+ลอสอินน์นคร: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6</template>
+  <template id="msg-extra-bed">มีเตียงเสริมจำนวนจำกัด ค่าบริการ 300 บาท/คืน กรุณาแจ้งล่วงหน้าเพื่อตรวจสอบ</template>
+  <template id="msg-pet">สามารถนำสัตว์เลี้ยงได้ แต่ขอความร่วมมือให้อยู่นอกห้องนอน เพื่อความสะอาดและความสะดวกของผู้เข้าพักท่านถัดไป</template>
+  <template id="msg-cancel">นโยบายยกเลิก: แจ้งยกเลิกก่อนวันเข้าพัก 7 วันขึ้นไป คืนเงินเต็มจำนวน / น้อยกว่า 7 วัน ไม่สามารถคืนเงินได้</template>
+
+  <script>
+    // ---------- DOM ----------
+    const $ = sel=>document.querySelector(sel);
+    const $list = $('#list'), $q=$('#q');
+    const $draft=$('#draft'), $copyAll=$('#copyAll'), $clearAll=$('#clearAll'), $fab=$('#fab'), $composer=$('#composer'), $charCount=$('#charCount');
+    let tone='krub';
+
+    // ---------- UTIL ----------
+    const toast = document.createElement('div'); toast.className='toast'; toast.id='toast'; toast.textContent='คัดลอกแล้ว ✓'; document.body.appendChild(toast);
+    function setToast(msg='คัดลอกแล้ว ✓'){ toast.textContent=msg; toast.classList.add('show'); setTimeout(()=> toast.classList.remove('show'), 1300); }
+    function getText(id){ return (document.getElementById(id)?.content?.textContent||'').trim(); }
+    function normalizeTerms(text){ return text.replace(/เช็คอินน์/g,'เช็คอิน'); }
+    function toneAdjust(text){
+      text = normalizeTerms(text);
+      if(tone==='krub'){ return text.replace(/นะคะ/g,'นะครับ').replace(/ค่ะ/g,'ครับ').replace(/([^ก-๙])คะ/g,'$1ครับ'); }
+      return text;
+    }
+    function escapeRegExp(str){ return str.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+    function highlight(text, q){ if(!q) return text; try{ const re=new RegExp(escapeRegExp(q),'gi'); return text.replace(re,m=>`<mark>${m}</mark>`);}catch(e){return text;} }
+    function copyText(txt){ if(navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(txt).then(()=> setToast()).catch(()=> fallback(txt)); } else fallback(txt); }
+    function fallback(txt){ const ta=document.createElement('textarea'); ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); setToast(); } finally{ document.body.removeChild(ta); } }
+    function updateCount(){ $charCount.textContent = ($draft.value||'').length + ' ตัวอักษร'; }
+
+    // ---------- DATA ----------
+    const PRESETS = [
+      { id:'avail',      title:'1) มีห้องว่างไหม? (/avail)',           tpl:'msg-avail',        order:[1,1] },
+      { id:'no-avail',   title:'1) มีห้องว่างไหม? (/no-avail)',        tpl:'msg-no-avail',     order:[1,2] },
+      { id:'price-house',title:'2) ราคา + รายละเอียด (บ้านเจอกัน) (/price-house)', tpl:'msg-price-house', order:[2,1] },
+      { id:'price-inn1', title:'2) ราคา + รายละเอียด (ลอสอินน์นคร ชั้น 1) (/price-inn1)', tpl:'msg-price-inn1', order:[2,2] },
+      { id:'price-inn2', title:'2) ราคา + รายละเอียด (ลอสอินน์นคร ชั้น 2) (/price-inn2)', tpl:'msg-price-inn2', order:[2,3] },
+      { id:'price-inn3', title:'2) ราคา + รายละเอียด (ลอสอินน์นคร ชั้น 3) (/price-inn3)', tpl:'msg-price-inn3', order:[2,4] },
+      { id:'paid',       title:'3) วิธีชำระเงิน/มัดจำ (/paid)',       tpl:'msg-paid',         order:[3,1] },
+      { id:'confirm-book', title:'4.1) ยืนยันการจอง (กรอกวันที่) (/confirm-book)', tpl:null, type:'confirm', order:[4,1] },
+      { id:'checkin-house',title:'4.2.1) เช็คอิน บ้านเจอกัน (/checkin-house)', tpl:'msg-checkin-house', order:[4,2,1] },
+      { id:'checkin-inn',  title:'4.2.2) เช็คอิน ลอสอินน์นคร (/checkin-inn)', tpl:'msg-checkin-inn',  order:[4,2,2] },
+      { id:'map',        title:'5) แผนที่ (/map)',                      tpl:'msg-map',          order:[5,1] },
+      { id:'extra-bed',  title:'6) เตียงเสริม (/extra-bed)',           tpl:'msg-extra-bed',    order:[6,1] },
+      { id:'pet',        title:'7) สัตว์เลี้ยง (/pet)',                tpl:'msg-pet',          order:[7,1] },
+      { id:'cancel',     title:'8) การยกเลิก (/cancel)',               tpl:'msg-cancel',       order:[8,1] },
+    ];
+    const SECTION_NAMES = {
+      1:'1) มีห้องว่างไหม?',
+      2:'2) ราคา + รายละเอียด',
+      3:'3) วิธีชำระเงิน/มัดจำ',
+      4:'4) ยืนยันการจอง + เช็คอิน',
+      5:'5) แผนที่',
+      6:'6) สิ่งอำนวยความสะดวก',
+      7:'7) นโยบาย',
+      8:'8) การยกเลิก'
+    };
+
+    // ---------- RENDER ----------
+    function sectionRowHTML(main){ const name=SECTION_NAMES[main]||`หมวด ${main}`; return `<div class="section"><span class="dot"></span><div>${name}</div></div>`; }
+    function compareOrder(a,b){ const A=a.order||[], B=b.order||[], L=Math.max(A.length,B.length); for(let i=0;i<L;i++){ const ai=A[i]??0, bi=B[i]??0; if(ai!==bi) return ai-bi; } return 0; }
+    function rowTextHTML(p, q){
+      const text=getText(p.tpl)||'';
+      return `<div class="item open" data-id="${p.id}">
+        <div class="i-main">
+          <div class="i-title">${p.title}</div>
+          <div class="i-sub">${p.tpl ? '/'+p.id : ''}</div>
+          <div class="preview"><pre><code>${highlight(text,q)}</code></pre></div>
+        </div>
+        <div class="i-actions">
+          <button class="primary" data-act="copy" data-tpl="${p.tpl||''}">📋 คัดลอก</button>
+          <button data-act="add" data-tpl="${p.tpl||''}">➕ เพิ่มลงร่าง</button>
+        </div>
+      </div>`;
+    }
+    function itemRowConfirm(p){
+      const controls = `
+        <div class="inline-controls" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0 4px">
+          <span class="kv">เช็คอิน</span><input type="date" class="ci" />
+          <span class="kv">เช็คเอาท์</span><input type="date" class="co" />
+          <span class="kv">คืน</span><input class="nights" size="3" readonly value="1" />
+        </div>`;
+      const body = `
+        <div class="preview">
+          <pre><code class="cp">เลือกวันที่เพื่อสร้างข้อความยืนยันการจอง…</code></pre>
+        </div>`;
+      return `
+      <div class="item open" data-id="${p.id}" data-type="confirm">
+        <div class="i-main">
+          <div class="i-title">${p.title}</div>
+          <div class="i-sub">เลือกวันที่แล้วคัดลอกข้อความยืนยัน</div>
+          ${controls}
+        </div>
+        <div class="i-actions">
+          <button class="primary" data-act="copy">📋 คัดลอก</button>
+          <button data-act="add">➕ เพิ่มลงร่าง</button>
+        </div>
+        ${body}
+      </div>`;
+    }
+
+    function fmtDDMMYY(d){ const dt=new Date(d); if(isNaN(dt)) return ''; const dd=('0'+dt.getDate()).slice(-2); const mm=('0'+(dt.getMonth()+1)).slice(-2); const yy=(dt.getFullYear()+'').slice(-2); return `${dd}/${mm}/${yy}`; }
+    function calcNights(ci,co){ const a=new Date(ci), b=new Date(co); if(isNaN(a)||isNaN(b)) return 0; return Math.round((b-a)/86400000); }
+    function buildConfirmMessage(ci,co){ const n=calcNights(ci,co); if(n<1) return ''; return `ยืนยันการจอง เช็คอิน ${fmtDDMMYY(ci)} เช็คเอาท์ ${fmtDDMMYY(co)} จำนวน${n} คืน\nรบกวนขอ ชื่อ นามสกุล ผู้จองและเบอร์โทร`; }
+
+    function renderList(){
+      const q=($q.value||'').trim().toLowerCase();
+      const items=PRESETS.filter(p=> !q || p.title.toLowerCase().includes(q) || (p.tpl && getText(p.tpl).toLowerCase().includes(q))).sort(compareOrder);
+      let html='', prev=null;
+      items.forEach(p=>{ const main=p.order?.[0]||0; if(main!==prev){ html+=sectionRowHTML(main); prev=main; } html+= (p.type==='confirm') ? itemRowConfirm(p) : rowTextHTML(p, ($q.value||'')); });
+      $list.innerHTML = html || '<div class="muted" style="padding:8px 2px">ไม่พบผลการค้นหา</div>';
+      initConfirmRows();
+    }
+
+    function initConfirmRows(){
+      document.querySelectorAll('.item[data-type="confirm"]').forEach(row=>{
+        const ci=row.querySelector('.ci'), co=row.querySelector('.co'), nights=row.querySelector('.nights'), cp=row.querySelector('.cp');
+        const toISO=d=> d.toISOString().slice(0,10);
+        const today=new Date(), tmr=new Date(Date.now()+86400000);
+        if(!ci.value) ci.value=toISO(today);
+        if(!co.value) co.value=toISO(tmr);
+        function update(){ const n=Math.max(0, calcNights(ci.value,co.value)); nights.value=n>0?n:''; const msg=buildConfirmMessage(ci.value,co.value); cp.textContent=msg || 'โปรดเลือกวันที่ให้ถูกต้อง (อย่างน้อย 1 คืน)'; }
+        ci.addEventListener('change', update); co.addEventListener('change', update); update();
+      });
+    }
+
+    // ---------- EVENTS ----------
+    $list.addEventListener('click', (e)=>{
+      const btn=e.target.closest('button'); if(!btn) return;
+      const row=e.target.closest('.item'); const act=btn.dataset.act; if(!row) return;
+      const type=row.dataset.type; const tplId=btn.dataset.tpl;
+      if(type==='confirm'){
+        const ci=row.querySelector('.ci').value, co=row.querySelector('.co').value;
+        const msg=buildConfirmMessage(ci,co); if(!msg){ setToast('โปรดเลือกวันที่ให้ถูกต้อง'); return; }
+        if(act==='copy'){ copyText(toneAdjust(msg)); }
+        if(act==='add'){ const cur=$draft.value.trim(); $draft.value = cur ? (cur+"\n\n"+toneAdjust(msg)) : toneAdjust(msg); updateCount(); setToast('เพิ่มลงร่างแล้ว'); }
+        return;
+      }
+      const txt = toneAdjust(getText(tplId));
+      if(act==='copy'){ copyText(txt); }
+      if(act==='add'){ const cur=$draft.value.trim(); $draft.value = cur ? (cur+"\n\n"+txt) : txt; updateCount(); setToast('เพิ่มลงร่างแล้ว'); }
+    });
+
+    $q.addEventListener('input', renderList);
+
+    // Composer controls
+    function isMobile(){ return window.matchMedia('(max-width: 768px)').matches; }
+    $fab.addEventListener('click', ()=>{ $composer.classList.toggle('open'); });
+    $copyAll.addEventListener('click', ()=> copyText($draft.value||''));
+    $clearAll.addEventListener('click', ()=>{ $draft.value=''; updateCount(); });
+    $draft.addEventListener('input', updateCount);
+    updateCount();
+
+    // Tone
+    document.getElementById('tone-ka').onclick=()=>{ tone='ka'; document.getElementById('tone-ka').setAttribute('aria-pressed','true'); document.getElementById('tone-krub').setAttribute('aria-pressed','false'); };
+    document.getElementById('tone-krub').onclick=()=>{ tone='krub'; document.getElementById('tone-ka').setAttribute('aria-pressed','false'); document.getElementById('tone-krub').setAttribute('aria-pressed','true'); };
+
+    // Init
+    renderList();
+  </script>
+</body>
+</html>
