@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Preset ตอบแชท V2.4 — Data Complete & UI Refresh</title>
+  <style>
+    :root{
+      --bg:#f7f8fb;--text:#0b1220;--muted:#6b7280;--card:#fff;--card2:#f3f6fb;--line:#e5e9f2;
+      --accent:#2563eb;--accent-2:#1e40af;--shadow:0 8px 24px rgba(18,41,76,.07);--tap:44px;
+      --house:#2563eb; --house-bg:#eaf1ff; --house-fg:#1e3a8a; --house-br:#cfe0ff;
+      --inn:#10b981; --inn-bg:#eafff6; --inn-fg:#065f46; --inn-br:#caffdf;
+      --danger: #dc2626; --danger-bg: #fee2e2;
+    }
+    :root[data-theme='dark'] {
+      --bg: #111827; --text: #f3f4f6; --muted: #9ca3af; --card: #1f2937; --card2: #374151; --line: #4b5563;
+      --accent: #3b82f6; --accent-2: #60a5fa; --shadow: 0 8px 24px rgba(0,0,0,.15);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; transition: background .2s, color .2s;}
+    .wrap{max-width:920px;margin:10px auto;padding:0 12px}
+    .hdr{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap}
+    h1{margin:0;font-size:18px;font-weight:700}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .seg{display:inline-flex;border:1px solid var(--line);background:var(--card);border-radius:999px;overflow:hidden;box-shadow:var(--shadow)}
+    .seg button{padding:8px 12px;border:0;background:transparent;color:var(--muted);cursor:pointer;min-height:var(--tap);font-size:14px}
+    .seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+    .theme-toggle, .reset-btn{padding:8px 12px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;cursor:pointer;min-height:var(--tap);font-size:14px;box-shadow:var(--shadow)}
+    .reset-btn { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
+    .toolbar{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg),var(--bg));padding:8px 0 10px}
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .field{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px;box-shadow:var(--shadow);min-width:260px;flex:1}
+    .field input{border:0;outline:0;background:transparent;color:var(--text);font-size:16px;min-width:160px}
+    .list{display:flex;flex-direction:column;gap:10px}
+    .section{display:flex;gap:8px;align-items:center;padding:6px 4px 0;margin-top:6px;font-weight:800}
+    .section .dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(180deg,var(--accent),var(--accent-2));opacity:.75}
+    .item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow);border-left:4px solid transparent}
+    .i-main{min-width:0; cursor: pointer; position: relative; padding-right: 24px;}
+    .i-main::after {
+        content: '▼'; position: absolute; right: 4px; top: 4px;
+        font-size: 12px; color: var(--muted); transition: transform 0.2s;
+    }
+    .item.expanded .i-main::after { transform: rotate(180deg); }
+    .i-title{font-weight:700;font-size:15px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .i-sub{font:12.5px ui-monospace,Menlo,Consolas,monospace;color:var(--muted)}
+    .i-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .i-badge{margin-bottom:4px}
+    .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 8px;border:1px solid; font-size:12.5px;font-weight:700; letter-spacing:.2px}
+    .badge .dot{width:8px;height:8px;border-radius:50%}
+    .item.house{border-left-color:var(--house)}
+    .badge.house{background:var(--house-bg);color:var(--house-fg);border-color:var(--house-br)}
+    .badge.house .dot{background:var(--house)}
+    .item.inn{border-left-color:var(--inn)}
+    .badge.inn{background:var(--inn-bg);color:var(--inn-fg);border-color:var(--inn-br)}
+    .badge.inn .dot{background:var(--inn)}
+    button{cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px 12px;border-radius:12px;font-size:14px;min-height:var(--tap)}
+    button.primary{background:var(--accent);color:#fff;border-color:var(--accent-2)}
+    .preview{ display:block; margin-top:8px; max-height: 40px; overflow: hidden; position: relative; transition: max-height 0.3s ease-out; }
+    .preview::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 20px; background: linear-gradient(transparent, var(--card)); pointer-events: none; }
+    .item.expanded .preview { max-height: 500px; overflow: auto; }
+    .item.expanded .preview::after { display: none; }
+    pre{white-space:pre-wrap;background:var(--card2);border:1px dashed var(--line);border-radius:12px;padding:12px;margin:0;font-size:14px}
+    .toast{position:fixed;right:12px;bottom:12px;background:#0f172a;color:#cde5ff;border:1px solid #21304d;padding:10px 12px;border-radius:10px;opacity:0;transform:translateY(8px);transition:.2s;z-index:1500;font-size:13px}
+    .toast.show{opacity:1;transform:translateY(0)}
+    .fab{position:fixed;right:16px;bottom:16px;z-index:1100;display:none;align-items:center;justify-content:center;width:56px;height:56px;border-radius:999px;border:0;background:var(--accent);color:#fff;font-size:22px;box-shadow:0 10px 26px rgba(37,99,235,.35);cursor:pointer}
+    .composer{position:fixed;right:18px;bottom:18px;width:380px;max-width:94vw;max-height:78vh;display:flex;flex-direction:column;z-index:1000;resize:both;overflow:hidden;border-radius:16px;box-shadow:var(--shadow);background:var(--card)}
+    .card-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--line)}
+    .card-bd{padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--card);flex:1;min-height:0}
+    .textarea{width:100%;flex:1;min-height:120px;resize:none;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--card2);font-size:15px;color:var(--text)}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:999;display:none;opacity:0;transition:opacity .2s}
+    mark{background:#fff59d;color:#000}
+    .muted{color:var(--muted)}
+    .modal-overlay { position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .2s; }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    .modal-dialog { background: var(--card); border-radius: 16px; padding: 16px; width: 90vw; max-width: 500px; box-shadow: var(--shadow); transform: scale(0.95); transition: transform .2s; }
+    .modal-overlay.open .modal-dialog { transform: scale(1); }
+    .modal-dialog h3 { margin: 0 0 12px; font-size: 18px; }
+    .modal-dialog .textarea { min-height: 150px; font-size: 16px; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+    
+    @media (max-width: 768px){
+      .item{grid-template-columns:1fr}
+      .i-sub{display:none}
+      .fab{display:inline-flex}
+      .composer{left:0;right:0;bottom:0;width:auto;max-width:none;height:65vh;max-height:85vh;border-top-left-radius:18px;border-top-right-radius:18px;border-bottom-left-radius:0;border-bottom-right-radius:0;resize:none;transform:translateY(100%);transition:transform .25s ease-out}
+      .composer.open{transform:translateY(0)}
+      .overlay.open{display:block;opacity:1}
+      #closeComposer{display:inline-flex !important}
+    }
+
+    @media (max-width: 480px) {
+      .hdr { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .controls { justify-content: space-between; width: 100%; }
+      .i-actions { gap: 4px; }
+      .i-actions button { padding: 8px 10px; font-size: 13px; min-height: 40px; }
+      .date-picker-controls { flex-direction: column; align-items: stretch; gap: 10px; width: 100%; }
+      .date-picker-controls .kv { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+      .date-picker-controls input { flex-grow: 1; min-width: 120px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hdr">
+      <h1>Preset ตอบแชท V2.4</h1>
+      <div class="controls">
+        <button class="theme-toggle" id="theme-toggle" aria-label="สลับธีม">☀️</button>
+        <button class="reset-btn" id="reset-btn" title="รีเซ็ตข้อความทั้งหมดกลับเป็นค่าเริ่มต้น">รีเซ็ต</button>
+        <div class="seg" role="group" aria-label="ภาษา" id="lang-seg">
+          <button id="lang-th" aria-pressed="true">TH</button>
+          <button id="lang-en" aria-pressed="false">EN</button>
+        </div>
+        <div class="seg" role="group" aria-label="สรรพนามลงท้าย" id="tone-seg">
+          <button id="tone-ka" aria-pressed="false">ค่ะ/นะคะ</button>
+          <button id="tone-krub" aria-pressed="true">ครับ/นะครับ</button>
+        </div>
+      </div>
+    </div>
+    <div class="toolbar">
+      <div class="row">
+        <label class="field" style="flex:1">🔎 <input id="q" placeholder="ค้นหา / Search: /avail, ราคา, cancel…" /></label>
+      </div>
+    </div>
+    <div id="list" class="list"></div>
+  </div>
+  <div id="overlay" class="overlay"></div>
+  <button id="fab" class="fab" aria-label="เปิดตัวช่วยร่าง">✎</button>
+  <div id="composer" class="composer" role="dialog" aria-label="ตัวช่วยร่างข้อความตอบกลับ">
+    <div class="card-hd">
+      <div class="title">📝 ตัวช่วยร่าง</div>
+      <div class="row right">
+        <button id="copyAll" class="primary">📋 คัดลอกทั้งหมด</button>
+        <button id="clearAll">ล้าง</button>
+        <button id="closeComposer" style="display:none;min-height:auto;padding:4px 8px;font-size:18px;border-radius:8px">✕</button>
+      </div>
+    </div>
+    <div class="card-bd">
+      <textarea id="draft" class="textarea" placeholder="ข้อความที่เพิ่มจะมาแสดงที่นี่ — ปรับแก้/จัดเรียง แล้วคัดลอกไปใช้ได้ทันที"></textarea>
+      <div style="display:flex;justify-content:space-between;color:var(--muted);font-size:13px">
+        <span id="charCount">0 ตัวอักษร</span>
+        <em>ลากขอบเพื่อปรับขนาดได้</em>
+      </div>
+    </div>
+  </div>
+  <div id="edit-modal" class="modal-overlay">
+    <div class="modal-dialog">
+      <h3 id="edit-modal-title">แก้ไขข้อความ</h3>
+      <textarea id="edit-modal-textarea" class="textarea"></textarea>
+      <div class="modal-actions">
+        <button id="edit-modal-cancel">ยกเลิก</button>
+        <button id="edit-modal-save" class="primary">บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    // ---------- DOM ELEMENTS ----------
+    const $ = sel => document.querySelector(sel);
+    const $list = $('#list'), $q = $('#q');
+    const $draft = $('#draft'), $copyAll=$('#copyAll'), $clearAll=$('#clearAll'), $charCount=$('#charCount');
+    const $toneSeg = $('#tone-seg'), $toneKa=$('#tone-ka'), $toneKrub=$('#tone-krub');
+    const $langTh=$('#lang-th'), $langEn=$('#lang-en');
+    const $themeToggle = $('#theme-toggle'), $resetBtn = $('#reset-btn');
+    const $composer=$('#composer'), $fab=$('#fab'), $overlay=$('#overlay'), $closeComposer=$('#closeComposer');
+    const $editModal = $('#edit-modal'), $editModalTitle = $('#edit-modal-title');
+    const $editModalTextarea = $('#edit-modal-textarea'), $editModalCancel = $('#edit-modal-cancel'), $editModalSave = $('#edit-modal-save');
+    
+    let state = { tone: 'krub', lang: 'th', presets: [], editingPresetId: null };
+
+    // ---------- DATA MANAGEMENT ----------
+    const DEFAULT_PRESETS_DATA = {
+      'msg-avail': { th: 'ตอนนี้มีห้องว่างค่ะ รบกวนแจ้งวันที่เช็คอิน–เช็คเอาต์ และจำนวนผู้เข้าพัก เพื่อเราจะได้ตรวจสอบและยืนยันให้อีกครั้งนะคะ', en: 'We currently have availability. Please share your check-in/check-out dates and number of guests, and we’ll confirm for you.' },
+      'msg-no-avail': { th: 'ขออภัยค่ะ วันที่ที่ต้องการเข้าพัก ห้องเต็มแล้วนะคะ', en: 'Sorry, the requested dates are fully booked.' },
+      'msg-price-house': { th: `บ้านเจอกัน — ศุกร์–เสาร์ 4,500 บาท/คืน, อาทิตย์–พฤหัสบดี 4,000 บาท/คืน (ราคารวมทุกอย่างแล้ว ไม่มีบริการอาหารเช้าและครัว)\n• 3 ห้องนอน (แอร์) | 2 ห้องน้ำ | 4 เตียงคิงส์ไซส์ — พักมาตรฐาน 8 ท่าน\n• ชุดเครื่องนอนและผ้าขนหนูสำหรับ 8 ท่าน\n• เตียงเสริม (จำนวนจำกัด) 300 บาท/คืน\n• ระเบียงชมวิวและพื้นที่ส่วนกลาง • ฟรีจักรยาน 2 คัน\n• สามารถนำอาหารเข้ามาทานได้ (มีจาน–ชามบริการสำหรับ 8 ท่าน)\n• ที่จอดรถ 2 คันภายในที่พัก\n📍 แผนที่: https://maps.app.goo.gl/Hx1n1DxjSvUoYnWC8`, en: `Baan Jerkan — Fri–Sat 4,500 THB/night, Sun–Thu 4,000 THB/night (all-in price; no breakfast or kitchen service)\n• 3 bedrooms (A/C) | 2 bathrooms | 4 king-size beds — standard 8 guests\n• Bed linen and towels for 8 guests\n• Extra bed (limited) 300 THB/night\n• View balcony and shared area • 2 bicycles free\n• Guests may bring food (plates and bowls for 8 provided)\n• Parking for 2 cars inside\n📍 Map: https://maps.app.goo.gl/Hx1n1DxjSvUoYnWC8` },
+      'msg-price-inn1': { th: `ลอสอินน์นคร ชั้น 1 (Family Room) — 2,000 บาท/คืน (ราคารวมทุกอย่างแล้ว ไม่มีบริการอาหารเช้าและครัว)\n• ห้องพักชั้น 1 ทั้งชั้น | 1 ห้องนอนสำหรับครอบครัว (แอร์)\n• 3 เตียงคิงส์ไซส์ — พักมาตรฐาน 6 ท่าน\n• 1 ห้องน้ำ\n• พื้นที่ส่วนกลางและเคาน์เตอร์ครัวขนาดเล็ก\n• ชุดเครื่องนอนและผ้าขนหนูสำหรับ 6 ท่าน\n• เตียงเสริม (จำนวนจำกัด) 300 บาท/คืน\n• สามารถนำอาหารเข้ามาทานได้ (มีจาน–ชามบริการสำหรับ 6 ท่าน)\n• มีที่จอดรถภายใน (จอดได้ 2 คัน)\n📍 แผนที่: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6`, en: `Los Inn Nakhon — Floor 1 (Family Room) — 2,000 THB/night (all-in; no breakfast or kitchen service)\n• Entire 1st floor | 1 family bedroom (A/C)\n• 3 king-size beds — standard 6 guests\n• 1 bathroom\n• Shared area and small pantry\n• Bed linen and towels for 6 guests\n• Extra bed (limited) 300 THB/night\n• Guests may bring food (plates and bowls for 6 provided)\n• On-site parking (2 cars)\n📍 Map: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6` },
+      'msg-price-inn2': { th: `ลอสอินน์นคร ชั้น 2 (Two-Bedroom) — 2,500 บาท/คืน (ราคารวมทุกอย่างแล้ว ไม่มีบริการอาหารเช้าและครัว)\n• ห้องพักชั้น 2 ทั้งชั้น\n• 2 ห้องนอน (รวม 4 เตียงคิงส์ไซส์) — พักมาตรฐาน 8 ท่าน\n  – ห้องสำหรับครอบครัว: 3 เตียงคิงส์ไซส์\n  – ห้องนอนเดี่ยว: 1 เตียงคิงส์ไซส์\n• 3 ห้องน้ำ\n• พื้นที่ส่วนกลางในห้องสำหรับครอบครัว และเคาน์เตอร์ครัวขนาดเล็ก\n• ชุดเครื่องนอนและผ้าขนหนูสำหรับ 8 ท่าน\n• เตียงเสริม (จำนวนจำกัด) 300 บาท/คืน\n• สามารถนำอาหารเข้ามาทานได้ (มีจาน–ชามบริการสำหรับ 8 ท่าน)\n• มีที่จอดรถภายใน (จอดได้ 2 คัน)\n• ขึ้นลงทางบันได\n📍 แผนที่: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6`, en: `Los Inn Nakhon — Floor 2 (Two-Bedroom) — 2,500 THB/night (all-in; no breakfast or kitchen service)\n• Entire 2nd floor\n• 2 bedrooms (total 4 king-size beds) — standard 8 guests\n  – Family room: 3 king-size beds\n  – Single bedroom: 1 king-size bed\n• 3 bathrooms\n• Family-room living area and small pantry\n• Bed linen and towels for 8 guests\n• Extra bed (limited) 300 THB/night\n• Guests may bring food (plates and bowls for 8 provided)\n• On-site parking (2 cars)\n• Stairs only\n📍 Map: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6` },
+      'msg-price-inn3': { th: `ลอสอินน์นคร ชั้น 3 (Two-Bedroom) — 2,500 บาท/คืน (ราคารวมทุกอย่างแล้ว ไม่มีบริการอาหารเช้าและครัว)\n• ห้องพักชั้น 3 ทั้งชั้น\n• 2 ห้องนอน (รวม 4 เตียงคิงส์ไซส์) — พักมาตรฐาน 8 ท่าน\n  – ห้องสำหรับครอบครัว: 3 เตียงคิงส์ไซส์\n  – ห้องนอนเดี่ยว: 1 เตียงคิงส์ไซส์\n• 3 ห้องน้ำ\n• พื้นที่ส่วนกลางในห้องสำหรับครอบครัว และเคาน์เตอร์ครัวขนาดเล็ก\n• ชุดเครื่องนอนและผ้าขนหนูสำหรับ 8 ท่าน\n• เตียงเสริม (จำนวนจำกัด) 300 บาท/คืน\n• สามารถนำอาหารเข้ามาทานได้ (มีจาน–ชามบริการสำหรับ 8 ท่าน)\n• มีที่จอดรถภายใน (จอดได้ 2 คัน)\n• ขึ้นลงทางบันไดเท่านั้น (อาจไม่เหมาะสำหรับผู้ที่ขึ้นบันไดลำบาก)\n📍 แผนที่: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6`, en: `Los Inn Nakhon — Floor 3 (Two-Bedroom) — 2,500 THB/night (all-in; no breakfast or kitchen service)\n• Entire 3rd floor\n• 2 bedrooms (total 4 king-size beds) — standard 8 guests\n  – Family room: 3 king-size beds\n  – Single bedroom: 1 king-size bed\n• 3 bathrooms\n• Family-room living area and small pantry\n• Bed linen and towels for 8 guests\n• Extra bed (limited) 300 THB/night\n• Guests may bring food (plates and bowls for 8 provided)\n• On-site parking (2 cars)\n• Stairs only (may not suit guests with mobility issues)\n📍 Map: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6` },
+      'msg-paid': { th: `สามารถชำระเต็มจำนวน หรือโอนมัดจำ 50% เพื่อยืนยันการจอง หลังโอนรบกวนส่งสลิป พร้อมแจ้งชื่อผู้จอง เบอร์โทร และจำนวนผู้เข้าพักค่ะ\nธนาคาร: ทหารไทยธนชาต (TTB)\nเลขที่บัญชี: 321-2-76785-3\nชื่อบัญชี: บจก.บ้านเจอกัน (BAANJERKAN)`, en: `You can pay in full or transfer a 50% deposit to confirm your booking. After payment, please send the slip together with the booker’s full name, phone number, and number of guests.\nBank: TTB (TMBThanachart Bank)\nAccount No.: 321-2-76785-3\nAccount Name: BAANJERKAN Co., Ltd.` },
+      'msg-checkin-house': { th: `เช็คอิน 14:00–24:00 น.\nเช็คเอาท์ ก่อน 12:00 น.\n\nก่อนถึงที่พักประมาณ 30 นาที รบกวนโทรแจ้งที่เบอร์\n097-2161112 หรือ 095-5153834\n(เพื่อจัดส่งกุญแจให้ครับ)`, en: `Check-in 14:00–24:00\nCheck-out before 12:00\n\nPlease call 30 minutes before arrival at\n097-2161112 or 095-5153834\n(so we can deliver the keys)` },
+      'msg-checkin-inn': { th: `เช็คอิน 14:00–21:00 น.\nเช็คเอาท์ ก่อน 12:00 น.\n\n> ติดต่อรับกุญแจได้ที่เคาน์เตอร์แคชเชียร์ "ร้าน เจอกันคราฟท์" (ร้านของฝากของที่พัก ชั้นล่างสุด)\n> เบอร์ติดต่อ 097-2161112 , 095-5153834`, en: `Check-in 14:00–21:00\nCheck-out before 12:00\n\n> Get keys at the cashier counter “Jerkan Craft” (souvenir shop on the ground floor)\n> Contact 097-2161112, 095-5153834` },
+      'msg-map': { th: `บ้านเจอกัน: https://maps.app.goo.gl/Hx1n1DxjSvUoYnWC8\nลอสอินน์นคร: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6`, en: `Baan Jerkan: https://maps.app.goo.gl/Hx1n1DxjSvUoYnWC8\nLos Inn Nakhon: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6` },
+      'msg-extra-bed': { th: 'เตียงเสริม (จำนวนจำกัด) 300 บาท/คืน', en: 'Extra bed (limited) 300 THB/night' },
+      'msg-pet': { th: `ทางที่พักขอความร่วมมือ ไม่ให้นำสุนัขเข้าภายในห้องนอน\nเพื่อรักษาความสะอาดและความสะดวกสำหรับลูกค้าท่านถัดไปนะครับ 🙏\n\nในกรณีที่ตรวจพบการฝ่าฝืน ทางที่พักขออนุญาตเรียกเก็บค่าปรับ 1,000 บาท\nเพื่อชดเชยค่าทำความสะอาดและดูแลรักษาที่พักให้พร้อมใช้งานครับ\n\nขอบคุณพี่ลูกค้ามาก ๆ ครับที่ให้ความร่วมมือครับ`, en: `Pet policy: Please keep dogs out of the bedrooms to maintain cleanliness and comfort for the next guests. 🙏\nIf we detect a violation, a 1,000 THB cleaning fee will apply.\nThank you very much for your cooperation.` },
+      'msg-cancel': { th: 'นโยบายยกเลิก: แจ้งยกเลิกก่อนวันเข้าพัก 14 วันขึ้นไป คืนเงินเต็มจำนวน / น้อยกว่า 14 วัน ไม่สามารถคืนเงินได้', en: 'Cancellation policy: Cancel at least 14 days before check-in for a full refund. Less than 14 days is non-refundable.' }
+    };
+    
+    const SECTION_DEFINITIONS = {
+      1: { th: '1. สอบถามห้องว่าง', en: '1. Availability Inquiry' },
+      2: { th: '2. ราคาและรายละเอียด', en: '2. Price & Details' },
+      3: { th: '3. การชำระเงิน', en: '3. Payment' },
+      4: { th: '4. การจองและเช็คอิน', en: '4. Booking & Check-in' },
+      5: { th: '5. ข้อมูลเสริม', en: '5. Additional Info' },
+      6: { th: '6. นโยบาย', en: '6. Policies' }
+    };
+
+    const PRESET_STRUCTURE = [
+      { id:'avail', sectionId: 1, order: 1, titleTH:'ตอบกลับ: มีห้องว่าง', titleEN:'Reply: Available', tplId:'msg-avail' },
+      { id:'no-avail', sectionId: 1, order: 2, titleTH:'ตอบกลับ: ห้องเต็ม', titleEN:'Reply: Not Available', tplId:'msg-no-avail' },
+      
+      { id:'price-house', sectionId: 2, order: 1, titleTH:'บ้านเจอกัน', titleEN:'Baan Jerkan', tplId:'msg-price-house', prop:'house', propLabelTH:'บ้านเจอกัน', propLabelEN:'Baan Jerkan' },
+      { id:'price-inn1', sectionId: 2, order: 2, titleTH:'ลอสอินน์นคร ชั้น 1', titleEN:'Los Inn Nakhon Fl. 1', tplId:'msg-price-inn1', prop:'inn', propLabelTH:'ลอสอินน์นคร', propLabelEN:'Los Inn Nakhon' },
+      { id:'price-inn2', sectionId: 2, order: 3, titleTH:'ลอสอินน์นคร ชั้น 2', titleEN:'Los Inn Nakhon Fl. 2', tplId:'msg-price-inn2', prop:'inn', propLabelTH:'ลอสอินน์นคร', propLabelEN:'Los Inn Nakhon' },
+      { id:'price-inn3', sectionId: 2, order: 4, titleTH:'ลอสอินน์นคร ชั้น 3', titleEN:'Los Inn Nakhon Fl. 3', tplId:'msg-price-inn3', prop:'inn', propLabelTH:'ลอสอินน์นคร', propLabelEN:'Los Inn Nakhon' },
+
+      { id:'paid', sectionId: 3, order: 1, titleTH:'วิธีชำระเงิน/มัดจำ', titleEN:'Payment/Deposit Method', tplId:'msg-paid' },
+
+      { id:'confirm-book', sectionId: 4, order: 1, titleTH:'สร้างข้อความยืนยันการจอง', titleEN:'Generate Booking Confirmation', tplId:null, type:'confirm' },
+      { id:'checkin-house', sectionId: 4, order: 2, titleTH:'รายละเอียดเช็คอิน (บ้านเจอกัน)', titleEN:'Check-in Details (Baan Jerkan)', tplId:'msg-checkin-house', prop:'house', propLabelTH:'บ้านเจอกัน', propLabelEN:'Baan Jerkan' },
+      { id:'checkin-inn', sectionId: 4, order: 3, titleTH:'รายละเอียดเช็คอิน (ลอสอินน์นคร)', titleEN:'Check-in Details (Los Inn)', tplId:'msg-checkin-inn', prop:'inn', propLabelTH:'ลอสอินน์นคร', propLabelEN:'Los Inn Nakhon' },
+      
+      { id:'map', sectionId: 5, order: 1, titleTH:'แผนที่', titleEN:'Map', tplId:'msg-map' },
+      { id:'extra-bed', sectionId: 5, order: 2, titleTH:'เตียงเสริม', titleEN:'Extra Bed', tplId:'msg-extra-bed' },
+
+      { id:'pet', sectionId: 6, order: 1, titleTH:'นโยบายสัตว์เลี้ยง', titleEN:'Pet Policy', tplId:'msg-pet' },
+      { id:'cancel', sectionId: 6, order: 2, titleTH:'นโยบายการยกเลิก', titleEN:'Cancellation Policy', tplId:'msg-cancel' },
+    ];
+
+    function loadPresets() {
+      try {
+        const savedPresets = localStorage.getItem('userPresets');
+        if (savedPresets) { return JSON.parse(savedPresets); }
+      } catch (e) { console.error("Failed to parse presets from localStorage", e); }
+      return DEFAULT_PRESETS_DATA;
+    }
+    function savePresets(presets) { localStorage.setItem('userPresets', JSON.stringify(presets)); }
+
+    // ---------- UTILITIES ----------
+    const toast = document.createElement('div'); toast.className='toast'; document.body.appendChild(toast);
+    function setToast(msg='คัดลอกแล้ว ✓'){ toast.textContent=msg; toast.classList.add('show'); setTimeout(()=> toast.classList.remove('show'), 1300); }
+    function getPresetText(tplId) {
+        if (!tplId || !state.presets[tplId]) return '';
+        return state.presets[tplId][state.lang] || state.presets[tplId]['th'] || '';
+    }
+    function toneAdjust(text){
+      if(state.lang ==='th' && state.tone ==='krub'){ return text.replace(/นะคะ/g,'นะครับ').replace(/ค่ะ/g,'ครับ').replace(/(^|[^ก-๙])คะ/g,'$1ครับ'); }
+      return text;
+    }
+    function escapeRegExp(str){ return str.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+    function highlight(text, q){ if(!q) return text; try{ const re = new RegExp(escapeRegExp(q), 'gi'); return text.replace(re, m => '<mark>'+m+'</mark>'); } catch(e){ return text; } }
+    function copyText(txt){
+      if(navigator.clipboard && window.isSecureContext){
+        navigator.clipboard.writeText(txt)
+          .then(()=> setToast(state.lang==='th'?'คัดลอกแล้ว ✓':'Copied ✓'))
+          .catch(()=> fallback(txt));
+      } else { fallback(txt); }
+      function fallback(t){
+        const ta = document.createElement('textarea'); ta.value = t;
+        ta.style.position = 'fixed'; ta.style.top = 0; ta.style.left = 0; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); setToast(state.lang==='th'?'คัดลอกแล้ว ✓':'Copied ✓'); } 
+        catch (err) { console.error('Fallback: Oops, unable to copy', err); setToast(state.lang==='th'?'เกิดข้อผิดพลาด':'Copy failed'); }
+        document.body.removeChild(ta);
+      }
+    }
+    function updateCount(){ $charCount.textContent = (state.lang==='th'?'ตัวอักษร':'chars') + ': ' + (($draft.value||'').length); }
+    function fmtDDMMYY(d){ const dt=new Date(d); if(isNaN(dt)) return ''; const dd=('0'+dt.getDate()).slice(-2); const mm=('0'+(dt.getMonth()+1)).slice(-2); const yy=(dt.getFullYear()+'').slice(-2); return `${dd}/${mm}/${yy}`; }
+
+    // ---------- RENDER FUNCTIONS ----------
+    function renderList(){
+      const q = ($q.value||'').trim().toLowerCase();
+      const items = PRESET_STRUCTURE.filter(p => {
+        const title = state.lang === 'th' ? p.titleTH : p.titleEN;
+        const content = p.tplId ? getPresetText(p.tplId) : '';
+        return !q || title.toLowerCase().includes(q) || content.toLowerCase().includes(q);
+      }).sort((a, b) => {
+        if (a.sectionId !== b.sectionId) return a.sectionId - b.sectionId;
+        return a.order - b.order;
+      });
+      
+      let html = '', currentSectionId = null;
+      items.forEach(p => {
+        if(p.sectionId !== currentSectionId) {
+          currentSectionId = p.sectionId;
+          const section = SECTION_DEFINITIONS[currentSectionId];
+          const sectionName = state.lang === 'th' ? section.th : section.en;
+          html += `<div class="section"><span class="dot"></span><div>${sectionName}</div></div>`;
+        }
+        html += (p.type === 'confirm') ? itemRowConfirm(p) : rowTextHTML(p, q);
+      });
+      $list.innerHTML = html || `<div class="muted" style="padding:8px 2px">${state.lang==='th'?'ไม่พบผลการค้นหา':'No results'}</div>`;
+      initConfirmRows();
+    }
+    function rowTextHTML(p, q){
+      const text = getPresetText(p.tplId);
+      const title = state.lang === 'th' ? p.titleTH : p.titleEN;
+      return `<div class="item ${p.prop || ''}" data-id="${p.id}">
+        <div class="i-main">
+          ${p.prop ? `<div class="i-badge"><span class="badge ${p.prop}"><span class="dot"></span>${state.lang === 'th' ? p.propLabelTH : p.propLabelEN}</span></div>` : ''}
+          <div class="i-title">${title}</div>
+          <div class="i-sub">/${p.id}</div>
+          <div class="preview"><pre><code>${highlight(text, q)}</code></pre></div>
+        </div>
+        <div class="i-actions">
+          <button data-act="edit" data-tplid="${p.tplId}" title="แก้ไข">✏️</button>
+          <button class="primary" data-act="copy" data-tplid="${p.tplId}">📋 ${state.lang==='th'?'คัดลอก':'Copy'}</button>
+          <button data-act="add" data-tplid="${p.tplId}">➕ ${state.lang==='th'?'เพิ่มลงร่าง':'Add'}</button>
+        </div>
+      </div>`;
+    }
+    function itemRowConfirm(p){
+      const title = state.lang==='th' ? p.titleTH : p.titleEN;
+      return `<div class="item ${p.prop||''}" data-id="${p.id}" data-type="confirm">
+        <div class="i-main">
+          <div class="i-title">${title}</div>
+          <div class="i-sub">${state.lang==='th'?'กรอกข้อมูลเพื่อสร้างข้อความยืนยัน':'Fill details to generate confirmation'}</div>
+          <div class="date-picker-controls" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0 4px">
+            <label class="kv"><span>${state.lang==='th'?'เช็คอิน':'Check‑in'}</span><input type="date" class="ci" /></label>
+            <label class="kv"><span>${state.lang==='th'?'จำนวนคืน':'Nights'}</span><input type="number" class="nights" style="width: 70px;" value="1" min="1" /></label>
+            <label class="kv"><span>${state.lang==='th'?'เช็คเอาท์':'Check‑out'}</span><input type="date" class="co" /></label>
+          </div>
+          <div class="preview expanded"><pre><code class="cp">${state.lang==='th'?'เลือกวันที่...':'Pick dates...'}</code></pre></div>
+        </div>
+        <div class="i-actions">
+          <button class="primary" data-act="copy">📋 ${state.lang==='th'?'คัดลอก':'Copy'}</button>
+          <button data-act="add">➕ ${state.lang==='th'?'เพิ่มลงร่าง':'Add'}</button>
+        </div>
+      </div>`;
+    }
+    function calcNights(ci,co){ const a=new Date(ci), b=new Date(co); if(isNaN(a)||isNaN(b)) return 0; return Math.round((b-a)/86400000); }
+    function buildConfirmMessage(ci,co){
+      const n=calcNights(ci,co); if(n<1) return '';
+      const ciFormatted = fmtDDMMYY(ci);
+      const coFormatted = fmtDDMMYY(co);
+      if(state.lang==='th'){ return `ยืนยันการจอง เช็คอิน ${ciFormatted} เช็คเอาท์ ${coFormatted} จำนวน ${n} คืน\nรบกวนขอ ชื่อ–นามสกุล ผู้จอง และเบอร์โทรครับ`; }
+      else { return `Booking confirmation: Check‑in ${ciFormatted} • Check‑out ${coFormatted} • ${n} night(s)\nPlease share the booker’s full name and phone number.`; }
+    }
+    function initConfirmRows(){
+      document.querySelectorAll('.item[data-type="confirm"]').forEach(row=>{
+        const ci = row.querySelector('.ci'), co = row.querySelector('.co'), nights = row.querySelector('.nights'), cp = row.querySelector('.cp');
+        const toISO = d => d.toISOString().slice(0,10);
+
+        function updateMessage() {
+          const msg = buildConfirmMessage(ci.value, co.value);
+          cp.textContent = msg || (state.lang === 'th' ? 'โปรดเลือกวันที่ให้ถูกต้อง (อย่างน้อย 1 คืน)' : 'Please pick valid dates (at least 1 night)');
+        }
+
+        function onCiOrNightsChange() {
+          const checkinDate = new Date(ci.value);
+          const numNights = parseInt(nights.value, 10);
+          if (!isNaN(checkinDate.getTime()) && numNights > 0) {
+            const checkoutDate = new Date(checkinDate.getTime());
+            checkoutDate.setDate(checkoutDate.getDate() + numNights);
+            co.value = toISO(checkoutDate);
+          }
+          updateMessage();
+        }
+
+        function onCoChange() {
+          const numNights = calcNights(ci.value, co.value);
+          nights.value = numNights > 0 ? numNights : '';
+          updateMessage();
+        }
+
+        if (!ci.value) ci.value = toISO(new Date());
+        
+        ci.addEventListener('change', onCiOrNightsChange);
+        nights.addEventListener('input', onCiOrNightsChange);
+        co.addEventListener('change', onCoChange);
+        
+        onCiOrNightsChange();
+      });
+    }
+
+    // ---------- EVENT HANDLERS ----------
+    $list.addEventListener('click', (e)=>{
+      const button = e.target.closest('button[data-act]');
+      if (button) {
+        const act = button.dataset.act;
+        const row = button.closest('.item');
+        const tplId = button.dataset.tplid;
+        if (act === 'edit') {
+          state.editingPresetId = tplId;
+          $editModalTitle.textContent = `แก้ไขข้อความ (${state.lang.toUpperCase()})`;
+          $editModalTextarea.value = getPresetText(tplId);
+          $editModal.classList.add('open');
+          $editModalTextarea.focus();
+          return;
+        }
+        let textToProcess = '';
+        if (row.dataset.type === 'confirm') {
+            const ci = row.querySelector('.ci').value, co = row.querySelector('.co').value;
+            textToProcess = buildConfirmMessage(ci, co);
+            if (!textToProcess) { setToast(state.lang === 'th' ? 'โปรดเลือกวันที่ให้ถูกต้อง' : 'Pick valid dates'); return; }
+        } else { textToProcess = getPresetText(tplId); }
+        const finalText = toneAdjust(textToProcess);
+        if (act === 'copy') { copyText(finalText); }
+        if (act === 'add') {
+          const cur = $draft.value.trim();
+          $draft.value = cur ? `${cur}\n\n${finalText}` : finalText;
+          updateCount();
+          setToast(state.lang==='th'?'เพิ่มลงร่างแล้ว':'Added to draft');
+        }
+        return;
+      }
+      
+      const mainArea = e.target.closest('.i-main');
+      if (mainArea) {
+        const item = mainArea.closest('.item');
+        if (item && item.dataset.type !== 'confirm') {
+            item.classList.toggle('expanded');
+        }
+      }
+    });
+
+    $editModalSave.addEventListener('click', () => {
+      const newText = $editModalTextarea.value;
+      const tplId = state.editingPresetId;
+      if (tplId && state.presets[tplId]) {
+        state.presets[tplId][state.lang] = newText;
+        savePresets(state.presets);
+        renderList();
+        setToast('บันทึกแล้ว ✓');
+      }
+      $editModal.classList.remove('open');
+    });
+    $editModalCancel.addEventListener('click', () => $editModal.classList.remove('open'));
+    $q.addEventListener('input', renderList);
+    $draft.addEventListener('input', updateCount);
+    $copyAll.addEventListener('click', () => copyText($draft.value||''));
+    $clearAll.addEventListener('click', () => { $draft.value=''; updateCount(); });
+    function setLang(next) {
+      state.lang = next;
+      $langTh.setAttribute('aria-pressed', next==='th'); $langEn.setAttribute('aria-pressed', next==='en');
+      $toneSeg.style.display = next === 'th' ? 'inline-flex' : 'none';
+      localStorage.setItem('appLang', next);
+      renderList();
+    }
+    $langTh.addEventListener('click', () => setLang('th'));
+    $langEn.addEventListener('click', () => setLang('en'));
+    function setTone(next) {
+      state.tone = next;
+      $toneKa.setAttribute('aria-pressed', next === 'ka'); $toneKrub.setAttribute('aria-pressed', next === 'krub');
+      localStorage.setItem('appTone', next);
+    }
+    $toneKa.onclick = () => setTone('ka');
+    $toneKrub.onclick = () => setTone('krub');
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      $themeToggle.textContent = theme === 'dark' ? '🌙' : '☀️';
+      localStorage.setItem('appTheme', theme);
+    }
+    $themeToggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      setTheme(current === 'dark' ? 'light' : 'dark');
+    });
+    $resetBtn.addEventListener('click', () => {
+        if (confirm(state.lang === 'th' ? 'คุณแน่ใจหรือไม่ที่จะรีเซ็ตข้อความทั้งหมดกลับเป็นค่าเริ่มต้น?' : 'Are you sure you want to reset all messages to default?')) {
+            localStorage.removeItem('userPresets');
+            state.presets = loadPresets();
+            renderList();
+            setToast('รีเซ็ตการตั้งค่าแล้ว');
+        }
+    });
+    function openComposer() { $composer.classList.add('open'); $overlay.classList.add('open'); }
+    function closeComposer() { $composer.classList.remove('open'); $overlay.classList.remove('open'); }
+    $fab.addEventListener('click', openComposer);
+    $closeComposer.addEventListener('click', closeComposer);
+    $overlay.addEventListener('click', closeComposer);
+
+    // ---------- INITIALIZATION ----------
+    function initialize() {
+      const savedTheme = localStorage.getItem('appTheme') || 'light';
+      const savedLang = localStorage.getItem('appLang') || 'th';
+      const savedTone = localStorage.getItem('appTone') || 'krub';
+      state.presets = loadPresets();
+      setTheme(savedTheme);
+      setLang(savedLang);
+      setTone(savedTone);
+      updateCount();
+    }
+    initialize();
+  })();
+  </script>
+</body>
+</html>
