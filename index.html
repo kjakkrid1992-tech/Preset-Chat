@@ -149,6 +149,7 @@
                 <thead>
                     <tr class="text-left text-sm font-medium text-muted border-b border-line">
                         <th class="py-3 px-2 w-8"></th> <!-- Column for drag handle -->
+                        <th class="py-3 px-2 text-left" data-key="colActions">การจัดการ</th>
                         <th class="py-3 px-2 cursor-pointer sortable" data-sort-by="title">
                             ชื่อข้อความ
                             <i class="fas fa-caret-up sort-icon sort-asc-icon"></i>
@@ -159,8 +160,7 @@
                             <i class="fas fa-caret-up sort-icon sort-asc-icon"></i>
                             <i class="fas fa-caret-down sort-icon sort-desc-icon"></i>
                         </th>
-                        <th class="py-3 px-2 hidden lg:table-cell">ข้อความตัวอย่าง</th>
-                        <th class="py-3 px-2 text-right">การจัดการ</th>
+                        <th class="py-3 px-2 hidden lg:table-cell" data-key="colExample">ข้อความตัวอย่าง</th>
                     </tr>
                 </thead>
                 <tbody id="presets-table-body" class="divide-y divide-line">
@@ -435,13 +435,9 @@
                     } else if (p.prop === filterType) {
                          matchesFilter = true;
                     } else if (p.prop === 'all' && (filterType === 'house' || filterType === 'inn')) {
-                        // This logic is flawed, let's correct it
-                        // The logic should be: if filter is 'house', show 'house' AND 'all'
-                        // This is currently wrong. Let's fix it right here.
                         matchesFilter = true;
                     }
-
-                    // Corrected Filter Logic
+ 
                     let finalMatchesFilter = false;
                     if (filterType === 'all') {
                         finalMatchesFilter = true;
@@ -450,7 +446,6 @@
                             finalMatchesFilter = true;
                         }
                     }
-
 
                     return matchesSearch && finalMatchesFilter;
                 });
@@ -474,6 +469,13 @@
                     return `
                     <tr data-id="${p.id}" draggable="true" class="cursor-move">
                          <td class="py-3 px-2 text-center text-muted"><i class="fas fa-grip-vertical"></i></td>
+                         <td class="py-3 px-2">
+                            <div class="flex items-center gap-3">
+                                <button data-id="${p.id}" data-action="copy" class="text-sm text-accent hover:text-accent-2" title="${UI_STRINGS[currentLang].copyBtn}"><i class="fas fa-copy"></i></button>
+                                <button data-id="${p.id}" data-action="edit" class="text-sm text-accent hover:text-accent-2" title="${UI_STRINGS[currentLang].editBtn}"><i class="fas fa-edit"></i></button>
+                                <button data-id="${p.id}" data-action="delete" class="text-sm text-red-500 hover:text-red-700" title="${UI_STRINGS[currentLang].deleteBtn}"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
                         <td class="py-3 px-2 font-medium">
                             <div class="flex justify-between items-center cursor-pointer title-wrapper">
                                 <span>${p[`title${lang.toUpperCase()}`] || p.titleTH}</span>
@@ -490,11 +492,6 @@
                             </span>
                         </td>
                         <td class="py-3 px-2 text-sm text-muted hidden lg:table-cell truncate max-w-xs">${applyTone(p[`content${lang.toUpperCase()}`] || p.contentTH)}</td>
-                        <td class="py-3 px-2 text-right whitespace-nowrap">
-                            <button data-id="${p.id}" data-action="copy" class="text-sm text-accent hover:underline mr-2"><i class="fas fa-copy"></i><span class="hidden sm:inline ml-1">${UI_STRINGS[currentLang].copyBtn}</span></button>
-                            <button data-id="${p.id}" data-action="edit" class="text-sm text-accent hover:underline mr-2"><i class="fas fa-edit"></i><span class="hidden sm:inline ml-1">${UI_STRINGS[currentLang].editBtn}</span></button>
-                            <button data-id="${p.id}" data-action="delete" class="text-sm text-red-500 hover:underline"><i class="fas fa-trash"></i><span class="hidden sm:inline ml-1">${UI_STRINGS[currentLang].deleteBtn}</span></button>
-                        </td>
                     </tr>
                     `;
                 }).join('') || `<tr><td colspan="5" class="py-8 text-center text-muted">${UI_STRINGS[lang].noData}</td></tr>`;
