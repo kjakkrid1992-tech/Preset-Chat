@@ -59,6 +59,22 @@
         [data-theme='dark'] .generated-text .highlight {
             background-color: rgba(100, 181, 246, 0.2);
         }
+        /* Mobile Expandable Row Styles */
+        .expandable-content {
+            max-height: 0;
+            overflow-y: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        tr.is-expanded .expandable-content {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .expand-icon {
+            transition: transform 0.3s ease-in-out;
+        }
+        tr.is-expanded .expand-icon {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 <body class="bg-page text-main" data-theme="light">
@@ -418,9 +434,25 @@
                         matchesFilter = true;
                     } else if (p.prop === filterType) {
                          matchesFilter = true;
+                    } else if (p.prop === 'all' && (filterType === 'house' || filterType === 'inn')) {
+                        // This logic is flawed, let's correct it
+                        // The logic should be: if filter is 'house', show 'house' AND 'all'
+                        // This is currently wrong. Let's fix it right here.
+                        matchesFilter = true;
                     }
 
-                    return matchesSearch && matchesFilter;
+                    // Corrected Filter Logic
+                    let finalMatchesFilter = false;
+                    if (filterType === 'all') {
+                        finalMatchesFilter = true;
+                    } else {
+                        if (p.prop === filterType || p.prop === 'all') {
+                            finalMatchesFilter = true;
+                        }
+                    }
+
+
+                    return matchesSearch && finalMatchesFilter;
                 });
                 
                 if (currentSort.by !== 'order') {
@@ -442,7 +474,15 @@
                     return `
                     <tr data-id="${p.id}" draggable="true" class="cursor-move">
                          <td class="py-3 px-2 text-center text-muted"><i class="fas fa-grip-vertical"></i></td>
-                        <td class="py-3 px-2 font-medium">${p[`title${lang.toUpperCase()}`] || p.titleTH}</td>
+                        <td class="py-3 px-2 font-medium">
+                            <div class="flex justify-between items-center cursor-pointer title-wrapper">
+                                <span>${p[`title${lang.toUpperCase()}`] || p.titleTH}</span>
+                                <i class="fas fa-chevron-down text-xs text-muted ml-2 expand-icon lg:hidden"></i>
+                            </div>
+                            <div class="expandable-content lg:hidden">
+                                <pre class="w-full text-xs p-2 mt-2 rounded bg-page whitespace-pre-wrap">${applyTone(p[`content${lang.toUpperCase()}`] || p.contentTH)}</pre>
+                            </div>
+                        </td>
                         <td class="py-3 px-2 hidden md:table-cell">
                              <span class="text-xs font-semibold rounded-full px-2 py-1 ${badgeClass}">
                                 <span class="w-2 h-2 rounded-full inline-block mr-1 ${dotClass}"></span>
@@ -659,18 +699,28 @@
             
             $tableBody.addEventListener('click', (e) => {
                 const button = e.target.closest('button[data-action]');
-                if (!button) return;
-                const id = button.dataset.id;
-                const action = button.dataset.action;
-                const preset = allPresets.find(p => p.id === id);
-                if (!preset) return;
+                if (button) {
+                    const id = button.dataset.id;
+                    const action = button.dataset.action;
+                    const preset = allPresets.find(p => p.id === id);
+                    if (!preset) return;
 
-                if (action === 'copy') { 
-                    const originalText = preset[`content${currentLang.toUpperCase()}`] || preset.contentTH;
-                    copyText(applyTone(originalText));
+                    if (action === 'copy') { 
+                        const originalText = preset[`content${currentLang.toUpperCase()}`] || preset.contentTH;
+                        copyText(applyTone(originalText));
+                    }
+                    else if (action === 'edit') { showPresetModal(preset); }
+                    else if (action === 'delete') { showConfirmModal(UI_STRINGS[currentLang].deleteConfirm, async () => { await deletePresetFromFirebase(id); allPresets = allPresets.filter(p => p.id !== id); renderTable(); }); }
+                    return;
                 }
-                else if (action === 'edit') { showPresetModal(preset); }
-                else if (action === 'delete') { showConfirmModal(UI_STRINGS[currentLang].deleteConfirm, async () => { await deletePresetFromFirebase(id); allPresets = allPresets.filter(p => p.id !== id); renderTable(); }); }
+
+                const titleWrapper = e.target.closest('.title-wrapper');
+                if(titleWrapper) {
+                    const row = titleWrapper.closest('tr');
+                    if(row) {
+                        row.classList.toggle('is-expanded');
+                    }
+                }
             });
 
             $('#confirm-ok').addEventListener('click', () => { if (confirmCallback) { confirmCallback(); } hideConfirmModal(); });
