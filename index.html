@@ -148,8 +148,6 @@
             <table class="w-full table-auto">
                 <thead>
                     <tr class="text-left text-sm font-medium text-muted border-b border-line">
-                        <th class="py-3 px-2 w-8"></th> <!-- Column for drag handle -->
-                        <th class="py-3 px-2 text-left" data-key="colActions">การจัดการ</th>
                         <th class="py-3 px-2 cursor-pointer sortable" data-sort-by="title">
                             ชื่อข้อความ
                             <i class="fas fa-caret-up sort-icon sort-asc-icon"></i>
@@ -161,6 +159,8 @@
                             <i class="fas fa-caret-down sort-icon sort-desc-icon"></i>
                         </th>
                         <th class="py-3 px-2 hidden lg:table-cell" data-key="colExample">ข้อความตัวอย่าง</th>
+                        <th class="py-3 px-2 text-right" data-key="colActions">การจัดการ</th>
+                        <th class="py-3 px-2 w-8"></th> <!-- Column for drag handle -->
                     </tr>
                 </thead>
                 <tbody id="presets-table-body" class="divide-y divide-line">
@@ -468,17 +468,12 @@
 
                     return `
                     <tr data-id="${p.id}" draggable="true" class="cursor-move">
-                         <td class="py-3 px-2 text-center text-muted"><i class="fas fa-grip-vertical"></i></td>
-                         <td class="py-3 px-2">
-                            <div class="flex items-center gap-3">
-                                <button data-id="${p.id}" data-action="copy" class="text-sm text-accent hover:text-accent-2" title="${UI_STRINGS[currentLang].copyBtn}"><i class="fas fa-copy"></i></button>
-                                <button data-id="${p.id}" data-action="edit" class="text-sm text-accent hover:text-accent-2" title="${UI_STRINGS[currentLang].editBtn}"><i class="fas fa-edit"></i></button>
-                                <button data-id="${p.id}" data-action="delete" class="text-sm text-red-500 hover:text-red-700" title="${UI_STRINGS[currentLang].deleteBtn}"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </td>
                         <td class="py-3 px-2 font-medium">
                             <div class="flex justify-between items-center cursor-pointer title-wrapper">
-                                <span>${p[`title${lang.toUpperCase()}`] || p.titleTH}</span>
+                                <span>
+                                    ${p[`title${lang.toUpperCase()}`] || p.titleTH}
+                                    <span class="text-xs font-semibold rounded-full px-2 py-1 ml-2 md:hidden ${badgeClass}">${propText}</span>
+                                </span>
                                 <i class="fas fa-chevron-down text-xs text-muted ml-2 expand-icon lg:hidden"></i>
                             </div>
                             <div class="expandable-content lg:hidden">
@@ -492,6 +487,14 @@
                             </span>
                         </td>
                         <td class="py-3 px-2 text-sm text-muted hidden lg:table-cell truncate max-w-xs">${applyTone(p[`content${lang.toUpperCase()}`] || p.contentTH)}</td>
+                        <td class="py-3 px-2">
+                            <div class="flex items-center justify-end gap-3">
+                                <button data-id="${p.id}" data-action="copy" class="text-sm text-accent hover:text-accent-2" title="${UI_STRINGS[currentLang].copyBtn}"><i class="fas fa-copy"></i></button>
+                                <button data-id="${p.id}" data-action="edit" class="text-sm text-accent hover:text-accent-2" title="${UI_STRINGS[currentLang].editBtn}"><i class="fas fa-edit"></i></button>
+                                <button data-id="${p.id}" data-action="delete" class="text-sm text-red-500 hover:text-red-700" title="${UI_STRINGS[currentLang].deleteBtn}"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                        <td class="py-3 px-2 text-center text-muted cursor-grab"><i class="fas fa-grip-vertical"></i></td>
                     </tr>
                     `;
                 }).join('') || `<tr><td colspan="5" class="py-8 text-center text-muted">${UI_STRINGS[lang].noData}</td></tr>`;
