@@ -120,9 +120,59 @@
                     </div>
                 </div>
                 <div class="sm:w-2/5 flex flex-col flex-shrink-0">
-                    <div class="generated-text w-full text-xs p-2 rounded-lg bg-page whitespace-pre-wrap min-h-[70px]">...</div>
+                    <div id="first-generated-text" class="generated-text w-full text-xs p-2 rounded-lg bg-page whitespace-pre-wrap min-h-[70px]">...</div>
                     <button id="copy-generated-btn" class="btn-primary w-full mt-2 py-2 px-3 rounded-lg text-sm">
                         <i class="fas fa-copy mr-1"></i><span id="generator-copy-btn-text">คัดลอก</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: Final Slip Generator Card -->
+        <div id="final-slip-generator" class="bg-card rounded-2xl shadow-main border border-line p-4 mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div class="flex-grow">
+                    <h2 id="slip-title" class="text-lg font-bold text-accent">ออกสลิปยืนยันการจอง (Final Slip)</h2>
+                    <p id="slip-desc" class="text-sm text-muted">กรอกข้อมูลลูกค้าและยอดเงินเพื่อสร้างข้อความแบบฟอร์ม</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+                        <label class="col-span-2 sm:col-span-2">
+                            <span id="slip-prop-label" class="text-xs text-muted">ที่พัก</span>
+                            <select id="slip-prop" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none">
+                                <option value="BJ">บ้านเจอกัน (BJ)</option>
+                                <option value="L1F">ลอสอินน์นคร ชั้น 1 (L1F)</option>
+                                <option value="L2F">ลอสอินน์นคร ชั้น 2 (L2F)</option>
+                                <option value="L3F">ลอสอินน์นคร ชั้น 3 (L3F)</option>
+                            </select>
+                        </label>
+                        <label class="col-span-2 sm:col-span-2">
+                            <span id="slip-channel-label" class="text-xs text-muted">ช่องทางการจอง</span>
+                            <select id="slip-channel" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none">
+                                <option value="LN">LINE (LN)</option>
+                                <option value="FB">FACEBOOK (FB)</option>
+                            </select>
+                        </label>
+                        <label class="col-span-2 sm:col-span-2">
+                            <span id="slip-name-label" class="text-xs text-muted">ชื่อผู้จอง</span>
+                            <input type="text" id="slip-name" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none" placeholder="เช่น คุณสมชาย">
+                        </label>
+                        <label class="col-span-2 sm:col-span-2">
+                            <span id="slip-phone-label" class="text-xs text-muted">เบอร์โทรติดต่อ</span>
+                            <input type="text" id="slip-phone" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none" placeholder="เช่น 0812345678">
+                        </label>
+                        <label class="col-span-2 sm:col-span-1">
+                            <span id="slip-deposit-label" class="text-xs text-muted">ยอดมัดจำ (บาท)</span>
+                            <input type="text" id="slip-deposit" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none" placeholder="1000">
+                        </label>
+                        <label class="col-span-2 sm:col-span-1">
+                            <span id="slip-total-label" class="text-xs text-muted">ยอดรวม (บาท)</span>
+                            <input type="text" id="slip-total" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none" placeholder="2500">
+                        </label>
+                    </div>
+                </div>
+                <div class="sm:w-2/5 flex flex-col flex-shrink-0">
+                    <div id="slip-generated-text" class="generated-text w-full text-xs sm:text-sm p-3 rounded-lg bg-page whitespace-pre-wrap min-h-[120px]">...</div>
+                    <button id="copy-slip-btn" class="btn-primary w-full mt-2 py-2 px-3 rounded-lg text-sm">
+                        <i class="fas fa-copy mr-1"></i><span>คัดลอกสลิปยืนยัน</span>
                     </button>
                 </div>
             </div>
@@ -275,14 +325,14 @@
                 { id: 'no-avail', order: 1, titleTH: 'ตอบกลับ: ห้องเต็ม', titleEN: 'Reply: Not Available', prop: 'all', contentTH: 'ขออภัยค่ะ วันที่ที่ต้องการเข้าพัก ห้องเต็มแล้วนะคะ', contentEN: 'Sorry, the requested dates are fully booked.' },
                 { id: 'price-house', order: 2, titleTH: 'ราคาบ้านเจอกัน', titleEN: 'Baan Jerkan Price', prop: 'all', contentTH: 'บ้านเจอกัน — ศุกร์–เสาร์ 4,500 บาท/คืน, อาทิตย์–พฤหัสบดี 4,000 บาท/คืน (ราคารวมทุกอย่างแล้ว ไม่มีบริการอาหารเช้าและครัว)\n• 3 ห้องนอน (แอร์) | 2 ห้องน้ำ | 4 เตียงคิงส์ไซส์ — พักมาตรฐาน 8 ท่าน\n• ชุดเครื่องนอนและผ้าขนหนูสำหรับ 8 ท่าน\n• เตียงเสริม (จำนวนจำกัด) 300 บาท/คืน\n• ระเบียงชมวิวและพื้นที่ส่วนกลาง • ฟรีจักรยาน 2 คัน\n• สามารถนำอาหารเข้ามาทานได้ (มีจาน–ชามบริการสำหรับ 8 ท่าน)\n• ที่จอดรถ 2 คันภายในที่พัก\n📍 แผนที่: https://maps.app.goo.gl/Hx1n1DxjSvUoYnWC8', contentEN: 'Baan Jerkan — Fri–Sat 4,500 THB/night, Sun–Thu 4,000 THB/night (all-in price; no breakfast or kitchen service)\n• 3 bedrooms (A/C) | 2 bathrooms | 4 king-size beds — standard 8 guests\n• Bed linen and towels for 8 guests\n• Extra bed (limited) 300 THB/night\n• View balcony and shared area • 2 bicycles free\n• Guests may bring food (plates and bowls for 8 provided)\n• Parking for 2 cars inside\n📍 Map: https://maps.app.goo.gl/Hx1n1DxjSvUoYnWC8' },
                 { id: 'price-inn1', order: 3, titleTH: 'ราคาลอสอินน์นคร ชั้น 1', titleEN: 'Los Inn Nakhon Fl. 1 Price', prop: 'all', contentTH: 'ลอสอินน์นคร ชั้น 1 (Family Room) — 2,000 บาท/คืน (ราคารวมทุกอย่างแล้ว ไม่มีบริการอาหารเช้าและครัว)\n• ห้องพักชั้น 1 ทั้งชั้น | 1 ห้องนอนสำหรับครอบครัว (แอร์)\n• 3 เตียงคิงส์ไซส์ — พักมาตรฐาน 6 ท่าน\n• 1 ห้องน้ำ\n• พื้นที่ส่วนกลางและเคาน์เตอร์ครัวขนาดเล็ก\n• ชุดเครื่องนอนและผ้าขนหนูสำหรับ 6 ท่าน\n• เตียงเสริม (จำนวนจำกัด) 300 บาท/คืน\n• สามารถนำอาหารเข้ามาทานได้ (มีจาน–ชามบริการสำหรับ 6 ท่าน)\n• มีที่จอดรถภายใน (จอดได้ 2 คัน)\n📍 แผนที่: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6', contentEN: 'Los Inn Nakhon — Floor 1 (Family Room) — 2,000 THB/night (all-in; no breakfast or kitchen service)\n• Entire 1st floor | 1 family bedroom (A/C)\n• 3 king-size beds — standard 6 guests\n• 1 bathroom\n• Shared area and small pantry\n• Bed linen and towels for 6 guests\n• Extra bed (limited) 300 THB/night\n• Guests may bring food (plates and bowls for 6 provided)\n• On-site parking (2 cars)\n📍 Map: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6' },
-                { id: 'price-inn2', order: 4, titleTH: 'ราคาลอสอินน์นคร ชั้น 2', titleEN: 'Los Inn Nakhon Fl. 2 Price', prop: 'all', contentTH: 'ลอสอินน์นคร ชั้น 2 (Two-Bedroom) — 2,500 บาท/คืน (ราคารวมทุกอย่างแล้ว ไม่มีบริการอาหารเช้าและครัว)\n• ห้องพักชั้น 2 ทั้งชั้น\n• 2 ห้องนอน (รวม 4 เตียงคิงส์ไซส์) — พักมาตรฐาน 8 ท่าน\n  – ห้องสำหรับครอบครัว: 3 เตียงคิงส์ไซส์\n  – ห้องนอนเดี่ยว: 1 เตียงคิงส์ไซส์\n• 3 ห้องน้ำ\n• พื้นที่ส่วนกลางในห้องสำหรับครอบครัว และเคาน์เตอร์ครัวขนาดเล็ก\n• ชุดเครื่องนอนและผ้าขนหนูสำหรับ 8 ท่าน\n• เตียงเสริม (จำนวนจำกัด) 300 บาท/คืน\n• สามารถนำอาหารเข้ามาทานได้ (มีจาน–ชามบริการสำหรับ 8 ท่าน)\n• มีที่จอดรถภายใน (จอดได้ 2 คัน)\n• ขึ้นลงทางบันได\n📍 แผนที่: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6', contentEN: 'Los Inn Nakhon — Floor 2 (Two-Bedroom) — 2,500 THB/night (all-in; no breakfast or kitchen service)\n• Entire 2nd floor\n• 2 bedrooms (total 4 king-size beds) — standard 8 guests\n  – Family room: 3 king-size beds\n  – Single bedroom: 1 king-size bed\n• 3 bathrooms\n• Family-room living area and small pantry\n• Bed linen and towels for 8 guests\n• Extra bed (limited) 300 THB/night\n• Guests may bring food (plates and bowls for 8 provided)\n• On-site parking (2 cars)\n• Stairs only\n📍 Map: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6' },
-                { id: 'price-inn3', order: 5, titleTH: 'ราคาลอสอินน์นคร ชั้น 3', titleEN: 'Los Inn Nakhon Fl. 3 Price', prop: 'all', contentTH: 'ลอสอินน์นคร ชั้น 3 (Two-Bedroom) — 2,500 บาท/คืน (ราคารวมทุกอย่างแล้ว ไม่มีบริการอาหารเช้าและครัว)\n• ห้องพักชั้น 3 ทั้งชั้น\n• 2 ห้องนอน (รวม 4 เตียงคิงส์ไซส์) — พักมาตรฐาน 8 ท่าน\n  – ห้องสำหรับครอบครัว: 3 เตียงคิงส์ไซส์\n  – ห้องนอนเดี่ยว: 1 เตียงคิงส์ไซส์\n• 3 ห้องน้ำ\n• พื้นที่ส่วนกลางในห้องสำหรับครอบครัว และเคาน์เตอร์ครัวขนาดเล็ก\n• ชุดเครื่องนอนและผ้าขนหนูสำหรับ 8 ท่าน\n• เตียงเสริม (จำนวนจำกัด) 300 บาท/คืน\n• สามารถนำอาหารเข้ามาทานได้ (มีจาน–ชามบริการสำหรับ 8 ท่าน)\n• มีที่จอดรถภายใน (จอดได้ 2 คัน)\n• ขึ้นลงทางบันไดเท่านั้น (อาจไม่เหมาะสำหรับผู้ที่ขึ้นบันไดลำบาก)\n📍 แผนที่: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6', contentEN: 'Los Inn Nakhon — Floor 3 (Two-Bedroom) — 2,500 THB/night (all-in; no breakfast or kitchen service)\n• Entire 3rd floor\n• 2 bedrooms (total 4 king-size beds) — standard 8 guests\n  – Family room: 3 king-size beds\n  – Single bedroom: 1 king-size bed\n• 3 bathrooms\n• Family-room living area and small pantry\n• Bed linen and towels for 8 guests\n• Extra bed (limited) 300 THB/night\n• Guests may bring food (plates and bowls for 8 provided)\n• On-site parking (2 cars)\n• Stairs only (may not suit guests with mobility issues)\n📍 Map: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6' },
+                { id: 'price-inn2', order: 4, titleTH: 'ราคาลอสอินน์นคร ชั้น 2', titleEN: 'Los Inn Nakhon Fl. 2 Price', prop: 'all', contentTH: 'ลอสอินน์นคร ชั้น 2 (Two-Bedroom) — 2,500 บาท/คืน (ราคารวมทุกอย่างแล้ว ไม่มีบริการอาหารเช้าและครัว)\n• ห้องพักชั้น 2 ทั้งชั้น\n• 2 ห้องนอน (รวม 4 เตียงคิงส์ไซส์) — พักมาตรฐาน 8 ท่าน\n  – ห้องสำหรับครอบครัว: 3 เตียงคิงส์ไซส์\n  – ห้องนอนเดี่ยว: 1 เตียงคิงส์ไซส์\n• 3 ห้องน้ำ\n• พื้นที่ส่วนกลางในห้องสำหรับครอบครัว และเคาน์เตอร์ครัวขนาดเล็ก\n• ชุดเครื่องนอนและผ้าขนหนูสำหรับ 8 ท่าน\n• เตียงเสริม (จำนวนจำกัด) 300 บาท/คืน\n• สามารถนำอาหารเข้ามาทานได้ (มีจาน–ชามบริการสำหรับ 8 ท่าน)\n• มีที่จอดรถภายใน (จอดได้ 2 คัน)\n• ขึ้นลงทางบันได\n📍 แผนที่: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6', contentEN: 'Los Inn Nakhon — Floor 2 (Two-Bedroom) — 2,500 THB/night (all-in; no breakfast or kitchen service)\n• Entire 2nd floor\n• 2 bedrooms (total 4 king-size beds) — standard 8 guests\n  – Family room: 3 king-size beds\n  – Single bedroom: 1 king-size bed\n• 3 bathrooms\n• Family-room living area and small pantry\n• Bed linen and towels for 8 guests\n• Extra bed (limited) 300 THB/night\n• Guests may bring food (plates and bowls for 8 provided)\n• On-site parking (2 cars)\n• Stairs only\n📍 Map: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6' },
+                { id: 'price-inn3', order: 5, titleTH: 'ราคาลอสอินน์นคร ชั้น 3', titleEN: 'Los Inn Nakhon Fl. 3 Price', prop: 'all', contentTH: 'ลอสอินน์นคร ชั้น 3 (Two-Bedroom) — 2,500 บาท/คืน (ราคารวมทุกอย่างแล้ว ไม่มีบริการอาหารเช้าและครัว)\n• ห้องพักชั้น 3 ทั้งชั้น\n• 2 ห้องนอน (รวม 4 เตียงคิงส์ไซส์) — พักมาตรฐาน 8 ท่าน\n  – ห้องสำหรับครอบครัว: 3 เตียงคิงส์ไซส์\n  – ห้องนอนเดี่ยว: 1 เตียงคิงส์ไซส์\n• 3 ห้องน้ำ\n• พื้นที่ส่วนกลางในห้องสำหรับครอบครัว และเคาน์เตอร์ครัวขนาดเล็ก\n• ชุดเครื่องนอนและผ้าขนหนูสำหรับ 8 ท่าน\n• เตียงเสริม (จำนวนจำกัด) 300 บาท/คืน\n• สามารถนำอาหารเข้ามาทานได้ (มีจาน–ชามบริการสำหรับ 8 ท่าน)\n• มีที่จอดรถภายใน (จอดได้ 2 คัน)\n• ขึ้นลงทางบันไดเท่านั้น (อาจไม่เหมาะสำหรับผู้ที่ขึ้นบันไดลำบาก)\n📍 แผนที่: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6', contentEN: 'Los Inn Nakhon — Floor 3 (Two-Bedroom) — 2,500 THB/night (all-in; no breakfast or kitchen service)\n• Entire 3rd floor\n• 2 bedrooms (total 4 king-size beds) — standard 8 guests\n  – Family room: 3 king-size beds\n  – Single bedroom: 1 king-size bed\n• 3 bathrooms\n• Family-room living area and small pantry\n• Bed linen and towels for 8 guests\n• Extra bed (limited) 300 THB/night\n• Guests may bring food (plates and bowls for 8 provided)\n• On-site parking (2 cars)\n• Stairs only (may not suit guests with mobility issues)\n📍 Map: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6' },
                 { id: 'paid', order: 6, titleTH: 'วิธีชำระเงิน/มัดจำ', titleEN: 'Payment/Deposit Method', prop: 'all', contentTH: 'สามารถชำระเต็มจำนวน หรือโอนมัดจำ 50% เพื่อยืนยันการจอง หลังโอนรบกวนส่งสลิป พร้อมแจ้งชื่อผู้จอง เบอร์โทร และจำนวนผู้เข้าพักค่ะ\nธนาคาร: ทหารไทยธนชาต (TTB)\nเลขที่บัญชี: 321-2-76785-3\nชื่อบัญชี: บจก.บ้านเจอกัน (BAANJERKAN)', contentEN: 'You can pay in full or transfer a 50% deposit to confirm your booking. After payment, please send the slip together with the booker’s full name, phone number, and number of guests.\nBank: TTB (TMBThanachart Bank)\nAccount No.: 321-2-76785-3\nAccount Name: BAANJERKAN Co., Ltd.' },
                 { id: 'checkin-house', order: 7, titleTH: 'รายละเอียดเช็คอิน (บ้านเจอกัน)', titleEN: 'Check-in Details (Baan Jerkan)', prop: 'all', contentTH: 'เช็คอิน 14:00–24:00 น.\nเช็คเอาท์ ก่อน 12:00 น.\n\nก่อนถึงที่พักประมาณ 30 นาที รบกวนโทรแจ้งที่เบอร์\n097-2161112 หรือ 095-5153834\n(เพื่อจัดส่งกุญแจให้ค่ะ)', contentEN: 'Check-in 14:00–24:00\nCheck-out before 12:00\n\nPlease call 30 minutes before arrival at\n097-2161112 or 095-5153834\n(so we can deliver the keys)' },
                 { id: 'checkin-inn', order: 8, titleTH: 'รายละเอียดเช็คอิน (ลอสอินน์นคร)', titleEN: 'Check-in Details (Los Inn)', prop: 'all', contentTH: 'เช็คอิน 14:00–21:00 น.\nเช็คเอาท์ ก่อน 12:00 น.\n\n> ติดต่อรับกุญแจได้ที่เคาน์เตอร์แคชเชียร์ "ร้าน เจอกันคราฟท์" (ร้านของฝากของที่พัก ชั้นล่างสุด)\n> เบอร์ติดต่อ 097-2161112 , 095-5153834', contentEN: 'Check-in 14:00–21:00\nCheck-out before 12:00\n\n> Get keys at the cashier counter “Jerkan Craft” (souvenir shop on the ground floor)\n> Contact 097-2161112, 095-5153834' },
                 { id: 'map', order: 9, titleTH: 'แผนที่', titleEN: 'Map', prop: 'all', contentTH: 'บ้านเจอกัน: https://maps.app.goo.gl/Hx1n1DxjSvUoYnWC8\nลอสอินน์นคร: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6', contentEN: 'Baan Jerkan: https://maps.app.goo.gl/Hx1n1DxjSvUoYnWC8\nLos Inn Nakhon: https://maps.app.goo.gl/qUUuyqxfyezGRVmG6' },
                 { id: 'extra-bed', order: 10, titleTH: 'เตียงเสริม', titleEN: 'Extra Bed', prop: 'all', contentTH: 'เตียงเสริม (จำนวนจำกัด) 300 บาท/คืน', contentEN: 'Extra bed (limited) 300 THB/night' },
-                { id: 'pet', order: 11, titleTH: 'นโยบายสัตว์เลี้ยง', titleEN: 'Pet Policy', prop: 'all', contentTH: 'ทางที่พักขอความร่วมมือ ไม่ให้นำสุนัخเข้าภายในห้องนอน\nเพื่อรักษาความสะอาดและความสะดวกสำหรับลูกค้าท่านถัดไปนะคะ 🙏\n\nในกรณีที่ตรวจพบการฝ่าฝืน ทางที่พักขออนุญาตเรียกเก็บค่าปรับ 1,000 บาท\nเพื่อชดเชยค่าทำความสะอาดและดูแลรักษาที่พักให้พร้อมใช้งานค่ะ\n\nขอบคุณพี่ลูกค้ามาก ๆ ค่ะที่ให้ความร่วมมือค่ะ', contentEN: 'Pet policy: Please keep dogs out of the bedrooms to maintain cleanliness and comfort for the next guests. 🙏\nIf we detect a violation, a 1,000 THB cleaning fee will apply.\nThank you very much for your cooperation.' },
+                { id: 'pet', order: 11, titleTH: 'นโยบายสัตว์เลี้ยง', titleEN: 'Pet Policy', prop: 'all', contentTH: 'ทางที่พักขอความร่วมมือ ไม่ให้นำสุนัขเข้าภายในห้องนอน\nเพื่อรักษาความสะอาดและความสะดวกสำหรับลูกค้าท่านถัดไปนะคะ 🙏\n\nในกรณีที่ตรวจพบการฝ่าฝืน ทางที่พักขออนุญาตเรียกเก็บค่าปรับ 1,000 บาท\nเพื่อชดเชยค่าทำความสะอาดและดูแลรักษาที่พักให้พร้อมใช้งานค่ะ\n\nขอบคุณพี่ลูกค้ามาก ๆ ค่ะที่ให้ความร่วมมือค่ะ', contentEN: 'Pet policy: Please keep dogs out of the bedrooms to maintain cleanliness and comfort for the next guests. 🙏\nIf we detect a violation, a 1,000 THB cleaning fee will apply.\nThank you very much for your cooperation.' },
                 { id: 'cancel', order: 12, titleTH: 'นโยบายการยกเลิก', titleEN: 'Cancellation Policy', prop: 'all', contentTH: 'นโยบายยกเลิก: แจ้งยกเลิกก่อนวันเข้าพัก 14 วันขึ้นไป คืนเงินเต็มจำนวน / น้อยกว่า 14 วัน ไม่สามารถคืนเงินได้', contentEN: 'Cancellation policy: Cancel at least 14 days before check-in for a full refund. Less than 14 days is non-refundable.' }
             ];
             const UI_STRINGS = {
@@ -363,7 +413,7 @@
                 const ciInput = card.querySelector('.ci-date');
                 const nightsInput = card.querySelector('.nights-count');
                 const coInput = card.querySelector('.co-date');
-                const generatedTextEl = card.querySelector('.generated-text');
+                const generatedTextEl = card.querySelector('#first-generated-text');
                 const copyBtn = card.querySelector('#copy-generated-btn');
 
                 const toISO = d => d.toISOString().slice(0,10);
@@ -391,6 +441,8 @@
                         coInput.value = toISO(checkoutDate);
                     }
                     updateMessage();
+                    // เพิ่มบรรทัดนี้: เพื่อส่งสัญญาณแจ้งเตือนระบบว่ามีการเปลี่ยนวันที่เรียบร้อยแล้ว
+                    document.dispatchEvent(new Event('datesSync'));
                 }
 
                 function onCoChange() {
@@ -403,6 +455,8 @@
                         nightsInput.value = nights > 0 ? nights : 1;
                     }
                     updateMessage();
+                    // เพิ่มบรรทัดนี้: เพื่อส่งสัญญาณแจ้งเตือนระบบว่ามีการเปลี่ยนวันที่เรียบร้อยแล้ว
+                    document.dispatchEvent(new Event('datesSync'));
                 }
 
                 ciInput.addEventListener('change', onCiOrNightsChange);
@@ -417,6 +471,107 @@
 
                 ciInput.value = toISO(new Date());
                 onCiOrNightsChange();
+            }
+
+            // =================================================================
+            // Final Slip Generator Logic
+            // =================================================================
+            function initializeFinalSlipGenerator() {
+                const nameInput = $('#slip-name');
+                const phoneInput = $('#slip-phone');
+                const depositInput = $('#slip-deposit');
+                const totalInput = $('#slip-total');
+                const propSelect = $('#slip-prop');
+                const channelSelect = $('#slip-channel');
+                const generatedEl = $('#slip-generated-text');
+                const copyBtn = $('#copy-slip-btn');
+                
+                const ciInput = $('.ci-date'); 
+                const coInput = $('.co-date'); 
+
+                function updateSlip() {
+                    const propCode = propSelect.value;
+                    const channel = channelSelect.value;
+                    const name = nameInput.value || 'ชื่อลูกค้า';
+                    const phone = phoneInput.value || 'เบอร์โทร';
+                    
+                    const rawDeposit = depositInput.value ? depositInput.value.replace(/,/g, '') : '';
+                    const rawTotal = totalInput.value ? totalInput.value.replace(/,/g, '') : '';
+
+                    const deposit = rawDeposit ? Number(rawDeposit).toLocaleString() : 'ยอดมัดจำ';
+                    let remain = 'ยอดคงเหลือ';
+                    if (rawDeposit && rawTotal) {
+                        const r = Number(rawTotal) - Number(rawDeposit);
+                        remain = r > 0 ? r.toLocaleString() : '0';
+                    }
+
+                    const shortDeposit = rawDeposit || 'ยอดมัดจำ';
+                    const shortTotal = rawTotal || 'ยอดรวม';
+
+                    const ci = fmtDDMMYY(ciInput.value) || 'XX/XX/XX';
+                    const co = fmtDDMMYY(coInput.value) || 'XX/XX/XX';
+
+                    let fullPropName = '';
+                    let fullPropNameEn = '';
+                    if (propCode === 'BJ') { fullPropName = 'บ้านเจอกัน'; fullPropNameEn = 'Baan Jerkan'; }
+                    else if (propCode === 'L1F') { fullPropName = 'ลอสอินน์นคร ชั้น 1'; fullPropNameEn = 'Los Inn Nakhon Fl. 1'; }
+                    else if (propCode === 'L2F') { fullPropName = 'ลอสอินน์นคร ชั้น 2'; fullPropNameEn = 'Los Inn Nakhon Fl. 2'; }
+                    else if (propCode === 'L3F') { fullPropName = 'ลอสอินน์นคร ชั้น 3'; fullPropNameEn = 'Los Inn Nakhon Fl. 3'; }
+
+                    const shortFormat = `${propCode}|${channel}|${name}|${phone}|${shortDeposit}/${shortTotal}`;
+
+                    // ใส่ Highlight โดยตรงลงใน Template แทนการใช้ replace() ทีหลัง เพื่อป้องกันบัคทับซ้อนกับตัวเลข
+                    const hName = `<span class="highlight">${name}</span>`;
+                    const hPhone = `<span class="highlight">${phone}</span>`;
+                    const hDeposit = `<span class="highlight">${deposit}</span>`;
+                    const hRemain = `<span class="highlight">${remain}</span>`;
+                    const hShortFormat = `<span class="highlight">${shortFormat}</span>`;
+
+                    let highlightedMsg = "";
+                    if(currentLang === 'th') {
+                        highlightedMsg = `[ยืนยันการจองที่พัก - ${fullPropName}]
+📍 เช็คอิน: ${ci} (หลัง 14.00 น.)
+📍 เช็คเอาท์: ${co} (ก่อน 12.00 น.)
+👤 ผู้จอง: ${hName}
+📞 เบอร์ติดต่อ: ${hPhone}
+💰 สถานะ: มัดจำแล้ว ${hDeposit}.- (ยอดคงเหลือ ${hRemain}.- ชำระวันเข้าพัก)
+
+${hShortFormat}`;
+                    } else {
+                        highlightedMsg = `[Booking Confirmation - ${fullPropNameEn}]
+📍 Check-in: ${ci} (After 14:00)
+📍 Check-out: ${co} (Before 12:00)
+👤 Booker: ${hName}
+📞 Phone: ${hPhone}
+💰 Status: Deposit paid ${hDeposit} THB (Remaining ${hRemain} THB to be paid on arrival)
+
+${hShortFormat}`;
+                    }
+                    
+                    generatedEl.innerHTML = highlightedMsg;
+                }
+
+                [nameInput, phoneInput, depositInput, totalInput, propSelect, channelSelect].forEach(el => el.addEventListener('input', updateSlip));
+                
+                // --- ลบ 2 บรรทัดเก่าออก ---
+                // ciInput.addEventListener('change', updateSlip);
+                // coInput.addEventListener('change', updateSlip);
+
+                copyBtn.addEventListener('click', () => {
+                    const textToCopy = generatedEl.innerText;
+                    if (textToCopy && textToCopy !== '...') {
+                        copyText(textToCopy);
+                    }
+                });
+
+                // Listen to external change from language toggle
+                document.addEventListener('langChanged', updateSlip);
+                
+                // --- เพิ่มบรรทัดใหม่นี้เข้าไป ---
+                // ดักจับสัญญาณ 'datesSync' ที่ส่งมาจากกล่องด้านบน เพื่ออัปเดตสลิป
+                document.addEventListener('datesSync', updateSlip);
+                
+                updateSlip();
             }
 
             function renderTable() {
@@ -614,8 +769,23 @@
                 $('#generator-checkin-label').textContent = UI_STRINGS[lang].checkinLabel;
                 $('#generator-nights-label').textContent = UI_STRINGS[lang].nightsLabel;
                 $('#generator-checkout-label').textContent = UI_STRINGS[lang].checkoutLabel;
+                
+                // Update new slip generator labels
+                $('#slip-title').textContent = lang === 'th' ? 'ออกสลิปยืนยันการจอง (Final Slip)' : 'Generate Final Slip';
+                $('#slip-desc').textContent = lang === 'th' ? 'กรอกข้อมูลลูกค้าและยอดเงินเพื่อสร้างข้อความแบบฟอร์ม' : 'Fill in customer details and amounts to generate the slip';
+                $('#slip-prop-label').textContent = lang === 'th' ? 'ที่พัก' : 'Property';
+                if ($('#slip-channel-label')) $('#slip-channel-label').textContent = lang === 'th' ? 'ช่องทางการจอง' : 'Booking Channel';
+                $('#slip-name-label').textContent = lang === 'th' ? 'ชื่อผู้จอง' : 'Booker Name';
+                $('#slip-phone-label').textContent = lang === 'th' ? 'เบอร์โทรติดต่อ' : 'Phone Number';
+                $('#slip-deposit-label').textContent = lang === 'th' ? 'ยอดมัดจำ (บาท)' : 'Deposit (THB)';
+                if ($('#slip-total-label')) $('#slip-total-label').textContent = lang === 'th' ? 'ยอดรวม (บาท)' : 'Total (THB)';
+                $('#copy-slip-btn span').textContent = lang === 'th' ? 'คัดลอกสลิปยืนยัน' : 'Copy Final Slip';
+                $('#slip-name').placeholder = lang === 'th' ? 'เช่น คุณสมชาย' : 'e.g. Somchai';
+                $('#slip-phone').placeholder = lang === 'th' ? 'เช่น 0812345678' : 'e.g. 0812345678';
+
                 renderTable();
                 $('#confirmation-generator .ci-date').dispatchEvent(new Event('change'));
+                document.dispatchEvent(new Event('langChanged')); // Trigger slip update
             }
 
             function setTone(tone) {
@@ -739,6 +909,7 @@
                 if (allPresets) {
                     allPresets.sort((a,b) => a.order - b.order);
                     initializeConfirmationGenerator();
+                    initializeFinalSlipGenerator(); // เพิ่มการเรียกใช้ตรงนี้
                     setTone(savedTone);
                     setLang(savedLang); 
                 } else {
@@ -752,4 +923,3 @@
     </script>
 </body>
 </html>
-
