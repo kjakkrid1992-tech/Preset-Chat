@@ -3,6 +3,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="แดชบอร์ดจัดการข้อความตอบแชทสำหรับที่พัก บ้านเจอกัน และ ลอสอินน์นคร" />
+    <meta name="theme-color" content="#1976D2" />
     <title>Dashboard - Preset ตอบแชท</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -40,8 +42,20 @@
         .seg { display:inline-flex; border:1px solid var(--line); background:var(--card); border-radius:999px; overflow:hidden; box-shadow:var(--shadow); }
         .seg button { padding:8px 12px; border:0; background:transparent; color:var(--muted); cursor:pointer; min-height:44px; font-size:14px; }
         .seg button[aria-pressed="true"] { background:var(--accent); color:#fff; }
-        .toast { position: fixed; right: 12px; bottom: 12px; z-index: 1000; padding: 10px 16px; border-radius: 999px; background: #333; color: #fff; opacity: 0; transform: translateY(20px); transition: opacity 0.3s, transform 0.3s; }
+        .toast { position: fixed; right: 12px; bottom: 12px; z-index: 1000; padding: 10px 16px; border-radius: 999px; background: #333; color: #fff; opacity: 0; transform: translateY(20px); transition: opacity 0.3s, transform 0.3s; display: flex; align-items: center; gap: 8px; max-width: calc(100vw - 24px); }
         .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background: #2E7D32; }
+        .toast.error { background: #C62828; }
+        /* Skeleton Loading */
+        @keyframes shimmer { 0% { opacity: .45; } 50% { opacity: 1; } 100% { opacity: .45; } }
+        .skeleton { background: var(--line); border-radius: 8px; animation: shimmer 1.4s ease-in-out infinite; }
+        /* Inline validation */
+        input.invalid, textarea.invalid { border-color: #C62828 !important; }
+        .field-error { color: #C62828; font-size: 12px; margin-top: 4px; }
+        /* Error banner */
+        .error-banner { background: #FDECEA; color: #B71C1C; border: 1px solid #F5C6C0; }
+        [data-theme='dark'] .error-banner { background: rgba(198,40,40,.15); color: #EF9A9A; border-color: rgba(198,40,40,.4); }
+        button:disabled { opacity: .55; cursor: not-allowed; }
         .table-auto { border-spacing: 0; }
         .table-auto th, .table-auto td { padding: 12px 16px; }
         input, select, textarea { background-color: var(--bg); color: var(--text); border-color: var(--line); }
@@ -91,13 +105,27 @@
                     <button id="tone-ka" aria-pressed="false">ค่ะ/นะคะ</button>
                     <button id="tone-krub" aria-pressed="true">ครับ/นะครับ</button>
                 </div>
-                <button id="theme-toggle" class="bg-card text-main rounded-full w-10 h-10 flex items-center justify-center shadow-main hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">🌙</button>
+                <button id="theme-toggle" aria-label="สลับธีมสว่าง/มืด" title="สลับธีมสว่าง/มืด" class="bg-card text-main rounded-full w-10 h-10 flex items-center justify-center shadow-main hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">🌙</button>
                 <button id="create-new-btn" class="btn-primary py-2 px-4 rounded-full shadow-main hover:scale-105 transition-transform duration-200">
                     <i class="fas fa-plus mr-2"></i> สร้างข้อความใหม่
                 </button>
             </div>
         </div>
-        
+
+        <!-- Connection Error Banner -->
+        <div id="error-banner" class="error-banner hidden rounded-2xl p-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-triangle-exclamation text-xl"></i>
+                <div>
+                    <p id="error-banner-title" class="font-bold">ไม่สามารถเชื่อมต่อฐานข้อมูลได้</p>
+                    <p id="error-banner-desc" class="text-sm">โปรดตรวจสอบอินเทอร์เน็ตของคุณ แล้วลองใหม่อีกครั้ง</p>
+                </div>
+            </div>
+            <button id="error-retry-btn" class="btn-primary py-2 px-5 rounded-full text-sm flex-shrink-0">
+                <i class="fas fa-rotate-right mr-1"></i><span>ลองใหม่</span>
+            </button>
+        </div>
+
         <!-- Responsive Confirmation Generator Card -->
         <div id="confirmation-generator" class="bg-card rounded-2xl shadow-main border border-line p-4 mb-6">
             <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -157,17 +185,18 @@
                         </label>
                         <label class="col-span-2 sm:col-span-2">
                             <span id="slip-phone-label" class="text-xs text-muted">เบอร์โทรติดต่อ</span>
-                            <input type="text" id="slip-phone" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none" placeholder="เช่น 0812345678">
+                            <input type="tel" id="slip-phone" inputmode="tel" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none" placeholder="เช่น 0812345678">
                         </label>
                         <label class="col-span-2 sm:col-span-1">
                             <span id="slip-deposit-label" class="text-xs text-muted">ยอดมัดจำ (บาท)</span>
-                            <input type="text" id="slip-deposit" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none" placeholder="1000">
+                            <input type="text" id="slip-deposit" inputmode="numeric" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none" placeholder="1,000">
                         </label>
                         <label class="col-span-2 sm:col-span-1">
                             <span id="slip-total-label" class="text-xs text-muted">ยอดรวม (บาท)</span>
-                            <input type="text" id="slip-total" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none" placeholder="2500">
+                            <input type="text" id="slip-total" inputmode="numeric" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none" placeholder="2,500">
                         </label>
                     </div>
+                    <p id="slip-warning" class="field-error hidden"><i class="fas fa-triangle-exclamation mr-1"></i><span></span></p>
                 </div>
                 <div class="sm:w-2/5 flex flex-col flex-shrink-0">
                     <div id="slip-generated-text" class="generated-text w-full text-xs sm:text-sm p-3 rounded-lg bg-page whitespace-pre-wrap min-h-[120px]">...</div>
@@ -182,8 +211,9 @@
         <div class="bg-card rounded-2xl shadow-main border border-line p-4 md:p-6 overflow-x-auto">
             <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
                 <div class="relative w-full sm:w-auto">
-                    <input type="text" id="search-input" placeholder="ค้นหาข้อความ..." class="w-full pl-10 pr-4 py-2 rounded-full text-main border border-line focus:outline-none focus:ring-2 focus:ring-accent-2">
+                    <input type="text" id="search-input" placeholder="ค้นหาข้อความ..." class="w-full pl-10 pr-9 py-2 rounded-full text-main border border-line focus:outline-none focus:ring-2 focus:ring-accent-2">
                     <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-muted"></i>
+                    <button id="search-clear" aria-label="ล้างคำค้นหา" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-main"><i class="fas fa-circle-xmark"></i></button>
                 </div>
                 <div class="flex-grow"></div>
                 <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -227,8 +257,9 @@
             <div class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="preset-title-th" class="block text-sm font-medium text-muted mb-1">ชื่อข้อความ (TH)</label>
+                        <label for="preset-title-th" class="block text-sm font-medium text-muted mb-1">ชื่อข้อความ (TH) <span class="text-red-500">*</span></label>
                         <input type="text" id="preset-title-th" class="w-full p-2 rounded-lg border border-line focus:outline-none focus:ring-2 focus:ring-accent-2" required>
+                        <p id="preset-title-error" class="field-error hidden"></p>
                     </div>
                     <div>
                         <label for="preset-title-en" class="block text-sm font-medium text-muted mb-1">ชื่อข้อความ (EN)</label>
@@ -278,9 +309,6 @@
 
     <!-- Firebase SDKs -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, writeBatch, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-
         document.addEventListener('DOMContentLoaded', async () => {
             // =================================================================
             // Firebase Setup
@@ -293,9 +321,27 @@
                 messagingSenderId: "277796601876",
                 appId: "1:277796601876:web:06af991cb25f3bc9c1a701"
             };
-            const app = initializeApp(firebaseConfig);
-            const db = getFirestore(app);
-            const presetsCollection = collection(db, 'presets');
+            // โหลด Firebase SDK แบบ dynamic import: ถ้า CDN ล่มหรือออฟไลน์
+            // หน้าเว็บและตัวสร้างข้อความยังใช้งานได้ และแสดงแบนเนอร์ให้กด "ลองใหม่" แทน
+            let db = null, presetsCollection = null;
+            let collection, getDocs, doc, updateDoc, deleteDoc, writeBatch, query, orderBy, setDoc;
+            async function connectFirebase() {
+                if (db) return true;
+                try {
+                    const [appMod, fsMod] = await Promise.all([
+                        import("https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"),
+                        import("https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js")
+                    ]);
+                    ({ collection, getDocs, doc, updateDoc, deleteDoc, writeBatch, query, orderBy, setDoc } = fsMod);
+                    const app = appMod.initializeApp(firebaseConfig);
+                    db = fsMod.getFirestore(app);
+                    presetsCollection = collection(db, 'presets');
+                    return true;
+                } catch (e) {
+                    console.error("Failed to load Firebase SDK", e);
+                    return false;
+                }
+            }
 
             // =================================================================
             // UI Elements
@@ -336,8 +382,8 @@
                 { id: 'cancel', order: 12, titleTH: 'นโยบายการยกเลิก', titleEN: 'Cancellation Policy', prop: 'all', contentTH: 'นโยบายยกเลิก: แจ้งยกเลิกก่อนวันเข้าพัก 14 วันขึ้นไป คืนเงินเต็มจำนวน / น้อยกว่า 14 วัน ไม่สามารถคืนเงินได้', contentEN: 'Cancellation policy: Cancel at least 14 days before check-in for a full refund. Less than 14 days is non-refundable.' }
             ];
             const UI_STRINGS = {
-                th: { title: 'แดชบอร์ดจัดการข้อความ', create: 'สร้างข้อความใหม่', searchPlaceholder: 'ค้นหาข้อความ...', filterLabel: 'ตัวกรอง:', all: 'ทั้งหมด', house: 'บ้านเจอกัน', inn: 'ลอสอินน์นคร', colName: 'ชื่อข้อความ', colType: 'ประเภท', colExample: 'ข้อความตัวอย่าง', colActions: 'การจัดการ', editBtn: 'แก้ไข', copyBtn: 'คัดลอก', deleteBtn: 'ลบ', noData: 'ไม่พบข้อมูลที่ตรงกับเงื่อนไข', editModalTitle: 'แก้ไขข้อความ', addModalTitle: 'สร้างข้อความใหม่', editModalSave: 'บันทึก', editModalCancel: 'ยกเลิก', confirmTitle: 'ยืนยันการดำเนินการ', confirmMessage: 'คุณแน่ใจหรือไม่?', confirmOk: 'ยืนยัน', confirmCancel: 'ยกเลิก', copySuccess: 'คัดลอกเรียบร้อยแล้ว ✓', deleteConfirm: 'คุณแน่ใจหรือไม่ที่จะลบข้อความนี้?', createSuccess: 'สร้างข้อความใหม่เรียบร้อยแล้ว', confirmGeneratorTitle: 'สร้างข้อความยืนยันการจอง', confirmGeneratorDesc: 'กรอกวันที่เพื่อสร้างข้อความ', checkinLabel: 'เช็คอิน', checkoutLabel: 'เช็คเอาต์', nightsLabel: 'คืน', confirmMsg: (ci, co, n) => `ยืนยันการจอง เช็คอิน <span class="highlight">${ci}</span> เช็คเอาท์ <span class="highlight">${co}</span> จำนวน <span class="highlight">${n} คืน</span>\nรบกวนขอ ชื่อ–นามสกุล ผู้จอง และเบอร์โทรค่ะ` },
-                en: { title: 'Message Management Dashboard', create: 'Create New Message', searchPlaceholder: 'Search messages...', filterLabel: 'Filter:', all: 'All', house: 'Baan Jerkan', inn: 'Los Inn Nakhon', colName: 'Message Name', colType: 'Type', colExample: 'Example Message', colActions: 'Actions', editBtn: 'Edit', copyBtn: 'Copy', deleteBtn: 'Delete', noData: 'No data matching the criteria', editModalTitle: 'Edit Message', addModalTitle: 'Create New Message', editModalSave: 'Save', editModalCancel: 'Cancel', confirmTitle: 'Confirm Action', confirmMessage: 'Are you sure?', confirmOk: 'Confirm', confirmCancel: 'Cancel', copySuccess: 'Copied ✓', deleteConfirm: 'Are you sure you want to delete this message?', createSuccess: 'New message created successfully', confirmGeneratorTitle: 'Generate Booking Confirmation', confirmGeneratorDesc: 'Fill dates to generate message', checkinLabel: 'Check-in', checkoutLabel: 'Check-out', nightsLabel: 'Nights', confirmMsg: (ci, co, n) => `Booking confirmation: Check-in <span class="highlight">${ci}</span> • Check-out <span class="highlight">${co}</span> • <span class="highlight">${n} night(s)</span>\nPlease share the booker’s full name and phone number.` }
+                th: { title: 'แดชบอร์ดจัดการข้อความ', create: 'สร้างข้อความใหม่', searchPlaceholder: 'ค้นหาข้อความ...', filterLabel: 'ตัวกรอง:', all: 'ทั้งหมด', house: 'บ้านเจอกัน', inn: 'ลอสอินน์นคร', colName: 'ชื่อข้อความ', colType: 'ประเภท', colExample: 'ข้อความตัวอย่าง', colActions: 'การจัดการ', editBtn: 'แก้ไข', copyBtn: 'คัดลอก', deleteBtn: 'ลบ', noData: 'ยังไม่มีข้อความ กดปุ่ม "สร้างข้อความใหม่" เพื่อเริ่มต้น', noDataFiltered: 'ไม่พบข้อความที่ตรงกับคำค้นหาหรือตัวกรอง', clearFilters: 'ล้างการค้นหา', editModalTitle: 'แก้ไขข้อความ', addModalTitle: 'สร้างข้อความใหม่', editModalSave: 'บันทึก', editModalSaving: 'กำลังบันทึก...', editModalCancel: 'ยกเลิก', confirmTitle: 'ยืนยันการลบ', confirmMessage: 'คุณแน่ใจหรือไม่?', confirmOk: 'ลบข้อความ', confirmCancel: 'ยกเลิก', copySuccess: 'คัดลอกเรียบร้อยแล้ว', copyFail: 'คัดลอกไม่สำเร็จ กรุณาลองใหม่', copyEmpty: 'กรุณากรอกข้อมูลให้ครบก่อนคัดลอก', deleteConfirm: (name) => `ต้องการลบ "${name}" หรือไม่? การลบไม่สามารถย้อนกลับได้`, deleteSuccess: 'ลบข้อความเรียบร้อยแล้ว', deleteFail: 'ลบไม่สำเร็จ กรุณาลองใหม่', createSuccess: 'สร้างข้อความใหม่เรียบร้อยแล้ว', editSuccess: 'แก้ไขข้อความเรียบร้อยแล้ว', saveFail: 'บันทึกไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อแล้วลองใหม่', titleRequired: 'กรุณาใส่ชื่อข้อความภาษาไทย', orderSaved: 'บันทึกลำดับใหม่แล้ว', orderFail: 'บันทึกลำดับไม่สำเร็จ กรุณาลองใหม่', depositWarning: 'ยอดมัดจำมากกว่ายอดรวม กรุณาตรวจสอบตัวเลขอีกครั้ง', loadErrorTitle: 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', loadErrorDesc: 'โปรดตรวจสอบอินเทอร์เน็ตของคุณ แล้วลองใหม่อีกครั้ง', retry: 'ลองใหม่', confirmGeneratorTitle: 'สร้างข้อความยืนยันการจอง', confirmGeneratorDesc: 'กรอกวันที่เพื่อสร้างข้อความ', checkinLabel: 'เช็คอิน', checkoutLabel: 'เช็คเอาต์', nightsLabel: 'คืน', confirmMsg: (ci, co, n) => `ยืนยันการจอง เช็คอิน <span class="highlight">${ci}</span> เช็คเอาท์ <span class="highlight">${co}</span> จำนวน <span class="highlight">${n} คืน</span>\nรบกวนขอ ชื่อ–นามสกุล ผู้จอง และเบอร์โทรค่ะ` },
+                en: { title: 'Message Management Dashboard', create: 'Create New Message', searchPlaceholder: 'Search messages...', filterLabel: 'Filter:', all: 'All', house: 'Baan Jerkan', inn: 'Los Inn Nakhon', colName: 'Message Name', colType: 'Type', colExample: 'Example Message', colActions: 'Actions', editBtn: 'Edit', copyBtn: 'Copy', deleteBtn: 'Delete', noData: 'No messages yet. Click "Create New Message" to get started', noDataFiltered: 'No messages match your search or filter', clearFilters: 'Clear search', editModalTitle: 'Edit Message', addModalTitle: 'Create New Message', editModalSave: 'Save', editModalSaving: 'Saving...', editModalCancel: 'Cancel', confirmTitle: 'Confirm Deletion', confirmMessage: 'Are you sure?', confirmOk: 'Delete', confirmCancel: 'Cancel', copySuccess: 'Copied to clipboard', copyFail: 'Copy failed, please try again', copyEmpty: 'Please fill in the details before copying', deleteConfirm: (name) => `Delete "${name}"? This cannot be undone.`, deleteSuccess: 'Message deleted', deleteFail: 'Delete failed, please try again', createSuccess: 'New message created successfully', editSuccess: 'Message updated successfully', saveFail: 'Save failed. Please check your connection and try again', titleRequired: 'Please enter the Thai message name', orderSaved: 'New order saved', orderFail: 'Failed to save order, please try again', depositWarning: 'Deposit is greater than the total. Please double-check the amounts', loadErrorTitle: 'Cannot connect to the database', loadErrorDesc: 'Please check your internet connection and try again', retry: 'Retry', confirmGeneratorTitle: 'Generate Booking Confirmation', confirmGeneratorDesc: 'Fill dates to generate message', checkinLabel: 'Check-in', checkoutLabel: 'Check-out', nightsLabel: 'Nights', confirmMsg: (ci, co, n) => `Booking confirmation: Check-in <span class="highlight">${ci}</span> • Check-out <span class="highlight">${co}</span> • <span class="highlight">${n} night(s)</span>\nPlease share the booker’s full name and phone number.` }
             };
             
             let allPresets = [];
@@ -371,8 +417,7 @@
                     return presets;
                 } catch (e) {
                     console.error("Failed to load presets from Firestore", e);
-                    alert("ไม่สามารถเชื่อมต่อฐานข้อมูลได้! โปรดตรวจสอบการตั้งค่า Firebase");
-                    return [];
+                    return null;
                 }
             }
             async function addPresetToFirebase(newPreset) {
@@ -403,8 +448,13 @@
                     }
                 });
                 if (changed) {
-                    await batch.commit();
-                    setToast("บันทึกลำดับใหม่แล้ว", 1500);
+                    try {
+                        await batch.commit();
+                        setToast(UI_STRINGS[currentLang].orderSaved);
+                    } catch (e) {
+                        console.error("Failed to save order", e);
+                        setToast(UI_STRINGS[currentLang].orderFail, 'error');
+                    }
                 }
             }
             
@@ -416,7 +466,8 @@
                 const generatedTextEl = card.querySelector('#first-generated-text');
                 const copyBtn = card.querySelector('#copy-generated-btn');
 
-                const toISO = d => d.toISOString().slice(0,10);
+                // ใช้วันที่ตามเวลาท้องถิ่น ไม่ใช่ UTC เพื่อไม่ให้วันเพี้ยนสำหรับเขตเวลาไทย (UTC+7)
+                const toISO = d => `${d.getFullYear()}-${('0' + (d.getMonth() + 1)).slice(-2)}-${('0' + d.getDate()).slice(-2)}`;
 
                 function updateMessage() {
                     const ci = ciInput.value;
@@ -435,6 +486,11 @@
                     if (!ciInput.value) return;
                     const checkinDate = new Date(ciInput.value);
                     const numNights = parseInt(nightsInput.value, 10);
+                    if (!isNaN(checkinDate.getTime())) {
+                        const minCheckout = new Date(checkinDate.getTime());
+                        minCheckout.setDate(minCheckout.getDate() + 1);
+                        coInput.min = toISO(minCheckout);
+                    }
                     if (!isNaN(checkinDate.getTime()) && numNights > 0) {
                         const checkoutDate = new Date(checkinDate.getTime());
                         checkoutDate.setDate(checkoutDate.getDate() + numNights);
@@ -465,7 +521,9 @@
                 copyBtn.addEventListener('click', () => {
                     const text = generatedTextEl.innerText; // Use innerText to copy without HTML tags
                     if (text && text !== '...') {
-                        copyText(text);
+                        copyText(text, copyBtn);
+                    } else {
+                        setToast(UI_STRINGS[currentLang].copyEmpty, 'error');
                     }
                 });
 
@@ -485,9 +543,17 @@
                 const channelSelect = $('#slip-channel');
                 const generatedEl = $('#slip-generated-text');
                 const copyBtn = $('#copy-slip-btn');
-                
-                const ciInput = $('.ci-date'); 
-                const coInput = $('.co-date'); 
+                const warningEl = $('#slip-warning');
+
+                const ciInput = $('.ci-date');
+                const coInput = $('.co-date');
+
+                // จัดรูปแบบตัวเลขเป็นหลักพัน (1,000) ระหว่างพิมพ์ และตัดอักขระที่ไม่ใช่ตัวเลขออก
+                function formatMoneyField(el) {
+                    const raw = el.value.replace(/[^\d]/g, '');
+                    el.value = raw ? Number(raw).toLocaleString() : '';
+                }
+                [depositInput, totalInput].forEach(el => el.addEventListener('input', () => formatMoneyField(el)));
 
                 function updateSlip() {
                     const propCode = propSelect.value;
@@ -504,6 +570,12 @@
                         const r = Number(rawTotal) - Number(rawDeposit);
                         remain = r > 0 ? r.toLocaleString() : '0';
                     }
+
+                    // เตือนเมื่อยอดมัดจำมากกว่ายอดรวม
+                    const overpaid = rawDeposit && rawTotal && Number(rawDeposit) > Number(rawTotal);
+                    warningEl.classList.toggle('hidden', !overpaid);
+                    if (overpaid) warningEl.querySelector('span').textContent = UI_STRINGS[currentLang].depositWarning;
+                    depositInput.classList.toggle('invalid', !!overpaid);
 
                     const shortDeposit = rawDeposit || 'ยอดมัดจำ';
                     const shortTotal = rawTotal || 'ยอดรวม';
@@ -560,7 +632,9 @@ ${hShortFormat}`;
                 copyBtn.addEventListener('click', () => {
                     const textToCopy = generatedEl.innerText;
                     if (textToCopy && textToCopy !== '...') {
-                        copyText(textToCopy);
+                        copyText(textToCopy, copyBtn);
+                    } else {
+                        setToast(UI_STRINGS[currentLang].copyEmpty, 'error');
                     }
                 });
 
@@ -642,11 +716,34 @@ ${hShortFormat}`;
                                 <button data-id="${p.id}" data-action="delete" class="text-sm text-red-500 hover:text-red-700" title="${UI_STRINGS[currentLang].deleteBtn}"><i class="fas fa-trash"></i></button>
                             </div>
                         </td>
-                        <td class="py-3 px-2 text-center text-muted cursor-grab"><i class="fas fa-grip-vertical"></i></td>
+                        <td class="py-3 px-2 text-center text-muted">
+                            <span class="cursor-grab hidden md:inline-block" title="ลากเพื่อจัดลำดับ"><i class="fas fa-grip-vertical"></i></span>
+                            <span class="inline-flex flex-col md:hidden">
+                                <button data-id="${p.id}" data-action="move-up" aria-label="เลื่อนขึ้น" class="px-2 py-1 text-muted hover:text-main"><i class="fas fa-chevron-up text-xs"></i></button>
+                                <button data-id="${p.id}" data-action="move-down" aria-label="เลื่อนลง" class="px-2 py-1 text-muted hover:text-main"><i class="fas fa-chevron-down text-xs"></i></button>
+                            </span>
+                        </td>
                     </tr>
                     `;
-                }).join('') || `<tr><td colspan="5" class="py-8 text-center text-muted">${UI_STRINGS[lang].noData}</td></tr>`;
-                
+                }).join('') || (() => {
+                    const hasFilters = searchTerm || filterType !== 'all';
+                    return `<tr><td colspan="5" class="py-10 text-center text-muted">
+                        <i class="fas fa-inbox text-3xl mb-2 block"></i>
+                        <p>${hasFilters ? UI_STRINGS[lang].noDataFiltered : UI_STRINGS[lang].noData}</p>
+                        ${hasFilters ? `<button id="clear-filters-btn" class="mt-3 text-accent hover:underline text-sm">${UI_STRINGS[lang].clearFilters}</button>` : ''}
+                    </td></tr>`;
+                })();
+
+                const clearFiltersBtn = $('#clear-filters-btn');
+                if (clearFiltersBtn) {
+                    clearFiltersBtn.addEventListener('click', () => {
+                        $searchInput.value = '';
+                        $filterSelect.value = 'all';
+                        updateSearchClearVisibility();
+                        renderTable();
+                    });
+                }
+
                 addDragAndDropHandlers();
             }
             function fmtDDMMYY(d) {
@@ -657,8 +754,37 @@ ${hShortFormat}`;
                 const yy = (dt.getFullYear() + '').slice(-2);
                 return `${dd}/${mm}/${yy}`;
             }
-            function setToast(message, duration = 2000) { $toast.textContent = message; $toast.classList.add('show'); setTimeout(() => { $toast.classList.remove('show'); }, duration); }
-            function copyText(txt){ if(navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(txt).then(() => setToast(UI_STRINGS[currentLang].copySuccess)).catch(() => fallback(txt)); } else { fallback(txt); } function fallback(t){ const ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.top = 0; ta.style.left = 0; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); setToast(UI_STRINGS[currentLang].copySuccess); } catch (err) { console.error('Fallback: Oops, unable to copy', err); setToast('Failed to copy'); } document.body.removeChild(ta); } }
+            let toastTimer = null;
+            function setToast(message, type = 'success', duration = 2200) {
+                const icon = type === 'success' ? 'fa-circle-check' : (type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info');
+                $toast.innerHTML = `<i class="fas ${icon}"></i><span></span>`;
+                $toast.querySelector('span').textContent = message;
+                $toast.classList.remove('success', 'error');
+                if (type === 'success' || type === 'error') $toast.classList.add(type);
+                $toast.classList.add('show');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => { $toast.classList.remove('show'); }, duration);
+            }
+            function flashCopied(btn) {
+                if (!btn) return;
+                const icon = btn.querySelector('i');
+                if (!icon) return;
+                const original = icon.className;
+                icon.className = 'fas fa-check';
+                btn.disabled = true;
+                setTimeout(() => { icon.className = original; btn.disabled = false; }, 1200);
+            }
+            function copyText(txt, btn){ if(navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(txt).then(() => { setToast(UI_STRINGS[currentLang].copySuccess); flashCopied(btn); }).catch(() => fallback(txt)); } else { fallback(txt); } function fallback(t){ const ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.top = 0; ta.style.left = 0; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); setToast(UI_STRINGS[currentLang].copySuccess); flashCopied(btn); } catch (err) { console.error('Fallback: Oops, unable to copy', err); setToast(UI_STRINGS[currentLang].copyFail, 'error'); } document.body.removeChild(ta); } }
+            function renderSkeleton(rows = 5) {
+                $tableBody.innerHTML = Array.from({ length: rows }).map(() => `
+                    <tr>
+                        <td class="py-3 px-2"><div class="flex items-center gap-3"><div class="skeleton w-8 h-8 rounded-full flex-shrink-0"></div><div class="skeleton h-4 w-2/3"></div></div></td>
+                        <td class="py-3 px-2 hidden md:table-cell"><div class="skeleton h-5 w-24 rounded-full"></div></td>
+                        <td class="py-3 px-2 hidden lg:table-cell"><div class="skeleton h-4 w-full max-w-xs"></div></td>
+                        <td class="py-3 px-2"><div class="skeleton h-4 w-12 ml-auto"></div></td>
+                        <td class="py-3 px-2"></td>
+                    </tr>`).join('');
+            }
             
             function showPresetModal(preset = null) {
                 const isEditing = preset !== null;
@@ -676,9 +802,14 @@ ${hShortFormat}`;
 
                 editingPresetId = isEditing ? preset.id : null;
 
+                const titleInput = $('#preset-title-th');
+                titleInput.classList.remove('invalid');
+                $('#preset-title-error').classList.add('hidden');
+
                 $presetModal.classList.remove('hidden');
                 $presetModal.classList.add('flex', 'opacity-100');
                 $presetModal.querySelector('div').classList.remove('scale-95');
+                setTimeout(() => titleInput.focus(), 50);
             }
 
             function hidePresetModal() {
@@ -783,6 +914,13 @@ ${hShortFormat}`;
                 $('#slip-name').placeholder = lang === 'th' ? 'เช่น คุณสมชาย' : 'e.g. Somchai';
                 $('#slip-phone').placeholder = lang === 'th' ? 'เช่น 0812345678' : 'e.g. 0812345678';
 
+                const banner = $('#error-banner');
+                if (banner && !banner.classList.contains('hidden')) {
+                    $('#error-banner-title').textContent = UI_STRINGS[lang].loadErrorTitle;
+                    $('#error-banner-desc').textContent = UI_STRINGS[lang].loadErrorDesc;
+                    $('#error-retry-btn span').textContent = UI_STRINGS[lang].retry;
+                }
+
                 renderTable();
                 $('#confirmation-generator .ci-date').dispatchEvent(new Event('change'));
                 document.dispatchEvent(new Event('langChanged')); // Trigger slip update
@@ -802,11 +940,22 @@ ${hShortFormat}`;
             $('#preset-modal-cancel').addEventListener('click', hidePresetModal);
 
             $('#preset-modal-save').addEventListener('click', async () => {
-                const titleTH = $('#preset-title-th').value.trim();
+                const saveBtn = $('#preset-modal-save');
+                const titleInput = $('#preset-title-th');
+                const titleError = $('#preset-title-error');
+                const titleTH = titleInput.value.trim();
                 if (!titleTH) {
-                    alert('กรุณาใส่ชื่อข้อความ (TH)');
+                    titleInput.classList.add('invalid');
+                    titleError.textContent = UI_STRINGS[currentLang].titleRequired;
+                    titleError.classList.remove('hidden');
+                    titleInput.focus();
                     return;
                 }
+                titleInput.classList.remove('invalid');
+                titleError.classList.add('hidden');
+
+                saveBtn.disabled = true;
+                saveBtn.textContent = UI_STRINGS[currentLang].editModalSaving;
 
                 const data = {
                     titleTH: titleTH,
@@ -823,7 +972,7 @@ ${hShortFormat}`;
                         if(index !== -1) {
                             allPresets[index] = { ...allPresets[index], ...data };
                         }
-                         setToast("แก้ไขข้อความเรียบร้อยแล้ว", 2000);
+                        setToast(UI_STRINGS[currentLang].editSuccess);
                     } else { // Creating
                         const newId = `custom-${Date.now()}`;
                         const newPreset = {
@@ -833,15 +982,18 @@ ${hShortFormat}`;
                         };
                         await addPresetToFirebase(newPreset);
                         allPresets.push(newPreset);
-                         setToast(UI_STRINGS[currentLang].createSuccess, 2000);
+                        setToast(UI_STRINGS[currentLang].createSuccess);
                     }
-                    
+
                     allPresets.sort((a, b) => a.order - b.order);
                     renderTable();
                     hidePresetModal();
                 } catch (error) {
                     console.error("Error saving preset:", error);
-                    alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+                    setToast(UI_STRINGS[currentLang].saveFail, 'error');
+                } finally {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = UI_STRINGS[currentLang].editModalSave;
                 }
             });
 
@@ -851,14 +1003,38 @@ ${hShortFormat}`;
                     // This is a placeholder translation.
                     const enContent = `[Auto-translated from TH]:\n${thContent}`;
                     $('#preset-content-en').value = enContent;
-                    setToast("แปลเป็นภาษาอังกฤษ (ตัวอย่าง)", 2000);
+                    setToast("แปลเป็นภาษาอังกฤษ (ตัวอย่าง)", 'info');
                 } else {
-                    setToast("กรุณาใส่เนื้อหาภาษาไทยก่อน", 2000);
+                    setToast("กรุณาใส่เนื้อหาภาษาไทยก่อน", 'error');
                 }
             });
 
-            $searchInput.addEventListener('input', renderTable);
+            const $searchClear = $('#search-clear');
+            function updateSearchClearVisibility() {
+                $searchClear.classList.toggle('hidden', !$searchInput.value);
+            }
+            let searchDebounce = null;
+            $searchInput.addEventListener('input', () => {
+                updateSearchClearVisibility();
+                clearTimeout(searchDebounce);
+                searchDebounce = setTimeout(renderTable, 200);
+            });
+            $searchClear.addEventListener('click', () => {
+                $searchInput.value = '';
+                updateSearchClearVisibility();
+                renderTable();
+                $searchInput.focus();
+            });
             $filterSelect.addEventListener('change', renderTable);
+
+            // ปิด modal ด้วยปุ่ม Esc หรือคลิกพื้นหลัง
+            document.addEventListener('keydown', (e) => {
+                if (e.key !== 'Escape') return;
+                if ($confirmModal.classList.contains('flex')) { hideConfirmModal(); }
+                else if ($presetModal.classList.contains('flex')) { hidePresetModal(); }
+            });
+            $presetModal.addEventListener('click', (e) => { if (e.target === $presetModal) hidePresetModal(); });
+            $confirmModal.addEventListener('click', (e) => { if (e.target === $confirmModal) hideConfirmModal(); });
             
             $tableBody.addEventListener('click', (e) => {
                 const button = e.target.closest('button[data-action]');
@@ -868,12 +1044,37 @@ ${hShortFormat}`;
                     const preset = allPresets.find(p => p.id === id);
                     if (!preset) return;
 
-                    if (action === 'copy') { 
+                    if (action === 'copy') {
                         const originalText = preset[`content${currentLang.toUpperCase()}`] || preset.contentTH;
-                        copyText(applyTone(originalText));
+                        copyText(applyTone(originalText), button);
                     }
                     else if (action === 'edit') { showPresetModal(preset); }
-                    else if (action === 'delete') { showConfirmModal(UI_STRINGS[currentLang].deleteConfirm, async () => { await deletePresetFromFirebase(id); allPresets = allPresets.filter(p => p.id !== id); renderTable(); }); }
+                    else if (action === 'delete') {
+                        const presetName = preset[`title${currentLang.toUpperCase()}`] || preset.titleTH;
+                        showConfirmModal(UI_STRINGS[currentLang].deleteConfirm(presetName), async () => {
+                            try {
+                                await deletePresetFromFirebase(id);
+                                allPresets = allPresets.filter(p => p.id !== id);
+                                renderTable();
+                                setToast(UI_STRINGS[currentLang].deleteSuccess);
+                            } catch (err) {
+                                console.error("Error deleting preset:", err);
+                                setToast(UI_STRINGS[currentLang].deleteFail, 'error');
+                            }
+                        });
+                    }
+                    else if (action === 'move-up' || action === 'move-down') {
+                        const row = button.closest('tr');
+                        const sibling = action === 'move-up' ? row.previousElementSibling : row.nextElementSibling;
+                        if (sibling && sibling.draggable) {
+                            if (action === 'move-up') {
+                                row.parentNode.insertBefore(row, sibling);
+                            } else {
+                                row.parentNode.insertBefore(sibling, row);
+                            }
+                            updateOrderInFirebase();
+                        }
+                    }
                     return;
                 }
                 
@@ -889,7 +1090,13 @@ ${hShortFormat}`;
 
             $('#confirm-ok').addEventListener('click', () => { if (confirmCallback) { confirmCallback(); } hideConfirmModal(); });
             $('#confirm-cancel').addEventListener('click', hideConfirmModal);
-            $themeToggle.addEventListener('click', () => { const isDark = $body.getAttribute('data-theme') === 'dark'; const nextTheme = isDark ? 'light' : 'dark'; $body.setAttribute('data-theme', nextTheme); $themeToggle.textContent = nextTheme === 'dark' ? '🌙' : '☀️'; localStorage.setItem('appTheme', nextTheme); });
+            // ไอคอนแสดง "ธีมที่จะสลับไป": โหมดสว่างแสดง 🌙 (กดเพื่อเข้าโหมดมืด) และกลับกัน
+            function applyTheme(theme) {
+                $body.setAttribute('data-theme', theme);
+                $themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+                localStorage.setItem('appTheme', theme);
+            }
+            $themeToggle.addEventListener('click', () => { applyTheme($body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); });
             $langTh.addEventListener('click', () => setLang('th'));
             $langEn.addEventListener('click', () => setLang('en'));
             $toneKa.addEventListener('click', () => setTone('ka'));
@@ -898,24 +1105,41 @@ ${hShortFormat}`;
             // =================================================================
             // Initialization
             // =================================================================
+            const $errorBanner = $('#error-banner');
+            const $errorRetryBtn = $('#error-retry-btn');
+
+            async function loadAndRender() {
+                $errorBanner.classList.add('hidden');
+                renderSkeleton();
+                const connected = await connectFirebase();
+                const presets = connected ? await loadPresetsFromFirebase() : null;
+                if (presets === null) {
+                    $tableBody.innerHTML = '';
+                    $('#error-banner-title').textContent = UI_STRINGS[currentLang].loadErrorTitle;
+                    $('#error-banner-desc').textContent = UI_STRINGS[currentLang].loadErrorDesc;
+                    $errorRetryBtn.querySelector('span').textContent = UI_STRINGS[currentLang].retry;
+                    $errorBanner.classList.remove('hidden');
+                    return;
+                }
+                allPresets = presets;
+                allPresets.sort((a, b) => a.order - b.order);
+                renderTable();
+            }
+            $errorRetryBtn.addEventListener('click', loadAndRender);
+
             async function initialize() {
                 const savedTheme = localStorage.getItem('appTheme') || 'light';
                 const savedLang = localStorage.getItem('appLang') || 'th';
                 const savedTone = localStorage.getItem('appTone') || 'krub';
-                $body.setAttribute('data-theme', savedTheme);
-                $themeToggle.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+                applyTheme(savedTheme);
 
-                allPresets = await loadPresetsFromFirebase();
-                if (allPresets) {
-                    allPresets.sort((a,b) => a.order - b.order);
-                    initializeConfirmationGenerator();
-                    initializeFinalSlipGenerator(); // เพิ่มการเรียกใช้ตรงนี้
-                    setTone(savedTone);
-                    setLang(savedLang); 
-                } else {
-                    console.error("Failed to load presets, allPresets is undefined.");
-                    alert("ไม่สามารถโหลดข้อมูลได้ กรุณาลองรีเฟรชหน้าเว็บ");
-                }
+                // ตั้งค่า UI ทั้งหมดก่อน แล้วจึงโหลดข้อมูล เพื่อให้หน้าจอใช้งานได้ทันทีแม้ฐานข้อมูลตอบช้า
+                initializeConfirmationGenerator();
+                initializeFinalSlipGenerator();
+                setTone(savedTone);
+                setLang(savedLang);
+
+                await loadAndRender();
             }
 
             initialize();
