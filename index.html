@@ -56,6 +56,14 @@
         .error-banner { background: #FDECEA; color: #B71C1C; border: 1px solid #F5C6C0; }
         [data-theme='dark'] .error-banner { background: rgba(198,40,40,.15); color: #EF9A9A; border-color: rgba(198,40,40,.4); }
         button:disabled { opacity: .55; cursor: not-allowed; }
+        /* Business selector chips */
+        .chip { border: 1px solid var(--line); background: var(--card); color: var(--muted); border-radius: 999px; padding: 6px 14px; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; min-height: 38px; transition: background .15s, color .15s; }
+        .chip:hover { color: var(--text); }
+        .chip[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .chip .chip-dot { width: 8px; height: 8px; border-radius: 999px; display: inline-block; flex-shrink: 0; }
+        /* Business color swatches */
+        .swatch { width: 30px; height: 30px; border-radius: 999px; cursor: pointer; border: 3px solid transparent; padding: 0; }
+        .swatch.selected { border-color: var(--text); }
         .table-auto { border-spacing: 0; }
         .table-auto th, .table-auto td { padding: 12px 16px; }
         input, select, textarea { background-color: var(--bg); color: var(--text); border-color: var(--line); }
@@ -209,6 +217,13 @@
 
         <!-- Preset Management Table -->
         <div class="bg-card rounded-2xl shadow-main border border-line p-4 md:p-6 overflow-x-auto">
+            <!-- Business Selector -->
+            <div class="flex flex-wrap items-center gap-2 mb-4">
+                <div id="business-chips" class="flex flex-wrap items-center gap-2" role="group" aria-label="เลือกธุรกิจ"></div>
+                <button id="manage-business-btn" class="chip" title="เพิ่ม แก้ไข หรือลบธุรกิจ">
+                    <i class="fas fa-gear"></i><span id="manage-business-btn-text">จัดการธุรกิจ</span>
+                </button>
+            </div>
             <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
                 <div class="relative w-full sm:w-auto">
                     <input type="text" id="search-input" placeholder="ค้นหาข้อความ..." class="w-full pl-10 pr-9 py-2 rounded-full text-main border border-line focus:outline-none focus:ring-2 focus:ring-accent-2">
@@ -216,14 +231,6 @@
                     <button id="search-clear" aria-label="ล้างคำค้นหา" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-main"><i class="fas fa-circle-xmark"></i></button>
                 </div>
                 <div class="flex-grow"></div>
-                <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <label for="filter-select" class="text-muted whitespace-nowrap hidden md:block">ตัวกรอง:</label>
-                    <select id="filter-select" class="w-full sm:w-auto py-2 px-4 rounded-full text-main border border-line focus:outline-none focus:ring-2 focus:ring-accent-2">
-                        <option value="all">ทั้งหมด</option>
-                        <option value="house">บ้านเจอกัน</option>
-                        <option value="inn">ลอสอินน์นคร</option>
-                    </select>
-                </div>
             </div>
             <table class="w-full table-auto">
                 <thead>
@@ -267,11 +274,9 @@
                     </div>
                 </div>
                 <div>
-                    <label for="preset-prop" class="block text-sm font-medium text-muted mb-1">ประเภท</label>
+                    <label for="preset-prop" id="preset-prop-label" class="block text-sm font-medium text-muted mb-1">ธุรกิจ</label>
                     <select id="preset-prop" class="w-full p-2 rounded-lg border border-line focus:outline-none focus:ring-2 focus:ring-accent-2">
-                        <option value="all">ทั้งหมด</option>
-                        <option value="house">บ้านเจอกัน</option>
-                        <option value="inn">ลอสอินน์นคร</option>
+                        <!-- Options are populated from the businesses collection -->
                     </select>
                 </div>
                 <div>
@@ -289,6 +294,39 @@
             <div class="flex justify-end mt-6 gap-2">
                 <button id="preset-modal-cancel" class="btn-outline text-main py-2 px-4 rounded-full">ยกเลิก</button>
                 <button id="preset-modal-save" class="btn-primary py-2 px-4 rounded-full">บันทึก</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Business Management Modal -->
+    <div id="business-modal" class="modal fixed inset-0 hidden items-center justify-center p-4 modal-overlay transition-opacity duration-200 opacity-0">
+        <div class="bg-card rounded-2xl shadow-lg border border-line p-6 w-full max-w-lg transform scale-95 transition-transform duration-200">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="business-modal-title" class="text-xl font-bold">จัดการธุรกิจ</h3>
+                <button id="business-modal-close" aria-label="ปิด" class="text-muted hover:text-main w-8 h-8"><i class="fas fa-xmark text-lg"></i></button>
+            </div>
+            <ul id="business-list" class="space-y-2 mb-4 max-h-52 overflow-y-auto"></ul>
+            <div class="border-t border-line pt-4">
+                <h4 id="business-form-title" class="font-bold mb-3">เพิ่มธุรกิจใหม่</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label for="business-name-th" id="business-name-th-label" class="block text-sm font-medium text-muted mb-1">ชื่อธุรกิจ (TH) <span class="text-red-500">*</span></label>
+                        <input type="text" id="business-name-th" class="w-full p-2 rounded-lg border border-line focus:outline-none focus:ring-2 focus:ring-accent-2">
+                        <p id="business-name-error" class="field-error hidden"></p>
+                    </div>
+                    <div>
+                        <label for="business-name-en" id="business-name-en-label" class="block text-sm font-medium text-muted mb-1">ชื่อธุรกิจ (EN)</label>
+                        <input type="text" id="business-name-en" class="w-full p-2 rounded-lg border border-line focus:outline-none focus:ring-2 focus:ring-accent-2">
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <span id="business-color-label" class="block text-sm font-medium text-muted mb-1">สีป้ายกำกับ</span>
+                    <div id="business-color-swatches" class="flex flex-wrap gap-2 mt-1"></div>
+                </div>
+                <div class="flex justify-end gap-2 mt-4">
+                    <button id="business-form-cancel" class="btn-outline text-main py-2 px-4 rounded-full hidden">ยกเลิก</button>
+                    <button id="business-form-save" class="btn-primary py-2 px-4 rounded-full"><i class="fas fa-plus mr-1"></i><span>เพิ่มธุรกิจ</span></button>
+                </div>
             </div>
         </div>
     </div>
@@ -323,7 +361,7 @@
             };
             // โหลด Firebase SDK แบบ dynamic import: ถ้า CDN ล่มหรือออฟไลน์
             // หน้าเว็บและตัวสร้างข้อความยังใช้งานได้ และแสดงแบนเนอร์ให้กด "ลองใหม่" แทน
-            let db = null, presetsCollection = null;
+            let db = null, presetsCollection = null, businessesCollection = null;
             let collection, getDocs, doc, updateDoc, deleteDoc, writeBatch, query, orderBy, setDoc;
             async function connectFirebase() {
                 if (db) return true;
@@ -336,6 +374,7 @@
                     const app = appMod.initializeApp(firebaseConfig);
                     db = fsMod.getFirestore(app);
                     presetsCollection = collection(db, 'presets');
+                    businessesCollection = collection(db, 'businesses');
                     return true;
                 } catch (e) {
                     console.error("Failed to load Firebase SDK", e);
@@ -351,7 +390,8 @@
             const $body = $('body');
             const $tableBody = $('#presets-table-body');
             const $searchInput = $('#search-input');
-            const $filterSelect = $('#filter-select');
+            const $businessChips = $('#business-chips');
+            const $businessModal = $('#business-modal');
             const $themeToggle = $('#theme-toggle');
             const $langTh = $('#lang-th');
             const $langEn = $('#lang-en');
@@ -382,17 +422,48 @@
                 { id: 'cancel', order: 12, titleTH: 'นโยบายการยกเลิก', titleEN: 'Cancellation Policy', prop: 'all', contentTH: 'นโยบายยกเลิก: แจ้งยกเลิกก่อนวันเข้าพัก 14 วันขึ้นไป คืนเงินเต็มจำนวน / น้อยกว่า 14 วัน ไม่สามารถคืนเงินได้', contentEN: 'Cancellation policy: Cancel at least 14 days before check-in for a full refund. Less than 14 days is non-refundable.' }
             ];
             const UI_STRINGS = {
-                th: { title: 'แดชบอร์ดจัดการข้อความ', create: 'สร้างข้อความใหม่', searchPlaceholder: 'ค้นหาข้อความ...', filterLabel: 'ตัวกรอง:', all: 'ทั้งหมด', house: 'บ้านเจอกัน', inn: 'ลอสอินน์นคร', colName: 'ชื่อข้อความ', colType: 'ประเภท', colExample: 'ข้อความตัวอย่าง', colActions: 'การจัดการ', editBtn: 'แก้ไข', copyBtn: 'คัดลอก', deleteBtn: 'ลบ', noData: 'ยังไม่มีข้อความ กดปุ่ม "สร้างข้อความใหม่" เพื่อเริ่มต้น', noDataFiltered: 'ไม่พบข้อความที่ตรงกับคำค้นหาหรือตัวกรอง', clearFilters: 'ล้างการค้นหา', editModalTitle: 'แก้ไขข้อความ', addModalTitle: 'สร้างข้อความใหม่', editModalSave: 'บันทึก', editModalSaving: 'กำลังบันทึก...', editModalCancel: 'ยกเลิก', confirmTitle: 'ยืนยันการลบ', confirmMessage: 'คุณแน่ใจหรือไม่?', confirmOk: 'ลบข้อความ', confirmCancel: 'ยกเลิก', copySuccess: 'คัดลอกเรียบร้อยแล้ว', copyFail: 'คัดลอกไม่สำเร็จ กรุณาลองใหม่', copyEmpty: 'กรุณากรอกข้อมูลให้ครบก่อนคัดลอก', deleteConfirm: (name) => `ต้องการลบ "${name}" หรือไม่? การลบไม่สามารถย้อนกลับได้`, deleteSuccess: 'ลบข้อความเรียบร้อยแล้ว', deleteFail: 'ลบไม่สำเร็จ กรุณาลองใหม่', createSuccess: 'สร้างข้อความใหม่เรียบร้อยแล้ว', editSuccess: 'แก้ไขข้อความเรียบร้อยแล้ว', saveFail: 'บันทึกไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อแล้วลองใหม่', titleRequired: 'กรุณาใส่ชื่อข้อความภาษาไทย', orderSaved: 'บันทึกลำดับใหม่แล้ว', orderFail: 'บันทึกลำดับไม่สำเร็จ กรุณาลองใหม่', depositWarning: 'ยอดมัดจำมากกว่ายอดรวม กรุณาตรวจสอบตัวเลขอีกครั้ง', loadErrorTitle: 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', loadErrorDesc: 'โปรดตรวจสอบอินเทอร์เน็ตของคุณ แล้วลองใหม่อีกครั้ง', retry: 'ลองใหม่', confirmGeneratorTitle: 'สร้างข้อความยืนยันการจอง', confirmGeneratorDesc: 'กรอกวันที่เพื่อสร้างข้อความ', checkinLabel: 'เช็คอิน', checkoutLabel: 'เช็คเอาต์', nightsLabel: 'คืน', confirmMsg: (ci, co, n) => `ยืนยันการจอง เช็คอิน <span class="highlight">${ci}</span> เช็คเอาท์ <span class="highlight">${co}</span> จำนวน <span class="highlight">${n} คืน</span>\nรบกวนขอ ชื่อ–นามสกุล ผู้จอง และเบอร์โทรค่ะ` },
-                en: { title: 'Message Management Dashboard', create: 'Create New Message', searchPlaceholder: 'Search messages...', filterLabel: 'Filter:', all: 'All', house: 'Baan Jerkan', inn: 'Los Inn Nakhon', colName: 'Message Name', colType: 'Type', colExample: 'Example Message', colActions: 'Actions', editBtn: 'Edit', copyBtn: 'Copy', deleteBtn: 'Delete', noData: 'No messages yet. Click "Create New Message" to get started', noDataFiltered: 'No messages match your search or filter', clearFilters: 'Clear search', editModalTitle: 'Edit Message', addModalTitle: 'Create New Message', editModalSave: 'Save', editModalSaving: 'Saving...', editModalCancel: 'Cancel', confirmTitle: 'Confirm Deletion', confirmMessage: 'Are you sure?', confirmOk: 'Delete', confirmCancel: 'Cancel', copySuccess: 'Copied to clipboard', copyFail: 'Copy failed, please try again', copyEmpty: 'Please fill in the details before copying', deleteConfirm: (name) => `Delete "${name}"? This cannot be undone.`, deleteSuccess: 'Message deleted', deleteFail: 'Delete failed, please try again', createSuccess: 'New message created successfully', editSuccess: 'Message updated successfully', saveFail: 'Save failed. Please check your connection and try again', titleRequired: 'Please enter the Thai message name', orderSaved: 'New order saved', orderFail: 'Failed to save order, please try again', depositWarning: 'Deposit is greater than the total. Please double-check the amounts', loadErrorTitle: 'Cannot connect to the database', loadErrorDesc: 'Please check your internet connection and try again', retry: 'Retry', confirmGeneratorTitle: 'Generate Booking Confirmation', confirmGeneratorDesc: 'Fill dates to generate message', checkinLabel: 'Check-in', checkoutLabel: 'Check-out', nightsLabel: 'Nights', confirmMsg: (ci, co, n) => `Booking confirmation: Check-in <span class="highlight">${ci}</span> • Check-out <span class="highlight">${co}</span> • <span class="highlight">${n} night(s)</span>\nPlease share the booker’s full name and phone number.` }
+                th: { title: 'แดชบอร์ดจัดการข้อความ', create: 'สร้างข้อความใหม่', searchPlaceholder: 'ค้นหาข้อความ...', filterLabel: 'ตัวกรอง:', all: 'ทั้งหมด', house: 'บ้านเจอกัน', inn: 'ลอสอินน์นคร', colName: 'ชื่อข้อความ', colType: 'ธุรกิจ', colExample: 'ข้อความตัวอย่าง', colActions: 'การจัดการ', editBtn: 'แก้ไข', copyBtn: 'คัดลอก', deleteBtn: 'ลบ', noData: 'ยังไม่มีข้อความ กดปุ่ม "สร้างข้อความใหม่" เพื่อเริ่มต้น', noDataFiltered: 'ไม่พบข้อความที่ตรงกับคำค้นหาหรือตัวกรอง', clearFilters: 'ล้างการค้นหา', editModalTitle: 'แก้ไขข้อความ', addModalTitle: 'สร้างข้อความใหม่', editModalSave: 'บันทึก', editModalSaving: 'กำลังบันทึก...', editModalCancel: 'ยกเลิก', confirmTitle: 'ยืนยันการลบ', confirmMessage: 'คุณแน่ใจหรือไม่?', confirmOk: 'ลบข้อความ', confirmCancel: 'ยกเลิก', copySuccess: 'คัดลอกเรียบร้อยแล้ว', copyFail: 'คัดลอกไม่สำเร็จ กรุณาลองใหม่', copyEmpty: 'กรุณากรอกข้อมูลให้ครบก่อนคัดลอก', deleteConfirm: (name) => `ต้องการลบ "${name}" หรือไม่? การลบไม่สามารถย้อนกลับได้`, deleteSuccess: 'ลบข้อความเรียบร้อยแล้ว', deleteFail: 'ลบไม่สำเร็จ กรุณาลองใหม่', createSuccess: 'สร้างข้อความใหม่เรียบร้อยแล้ว', editSuccess: 'แก้ไขข้อความเรียบร้อยแล้ว', saveFail: 'บันทึกไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อแล้วลองใหม่', titleRequired: 'กรุณาใส่ชื่อข้อความภาษาไทย', orderSaved: 'บันทึกลำดับใหม่แล้ว', orderFail: 'บันทึกลำดับไม่สำเร็จ กรุณาลองใหม่', depositWarning: 'ยอดมัดจำมากกว่ายอดรวม กรุณาตรวจสอบตัวเลขอีกครั้ง', loadErrorTitle: 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', loadErrorDesc: 'โปรดตรวจสอบอินเทอร์เน็ตของคุณ แล้วลองใหม่อีกครั้ง', retry: 'ลองใหม่', manageBusinesses: 'จัดการธุรกิจ', addBusinessTitle: 'เพิ่มธุรกิจใหม่', editBusinessTitle: 'แก้ไขธุรกิจ', businessNameTH: 'ชื่อธุรกิจ (TH)', businessNameEN: 'ชื่อธุรกิจ (EN)', businessColor: 'สีป้ายกำกับ', addBusinessBtn: 'เพิ่มธุรกิจ', businessLabel: 'ธุรกิจ', businessRequired: 'กรุณาใส่ชื่อธุรกิจภาษาไทย', businessSaved: 'บันทึกธุรกิจเรียบร้อยแล้ว', businessDeleted: 'ลบธุรกิจเรียบร้อยแล้ว', businessDeleteFail: 'ลบธุรกิจไม่สำเร็จ กรุณาลองใหม่', deleteBusinessConfirm: (name, count) => count > 0 ? `ต้องการลบธุรกิจ "${name}" หรือไม่? ข้อความ ${count} รายการของธุรกิจนี้จะถูกย้ายไปหมวด "ทั้งหมด"` : `ต้องการลบธุรกิจ "${name}" หรือไม่?`, confirmGeneratorTitle: 'สร้างข้อความยืนยันการจอง', confirmGeneratorDesc: 'กรอกวันที่เพื่อสร้างข้อความ', checkinLabel: 'เช็คอิน', checkoutLabel: 'เช็คเอาต์', nightsLabel: 'คืน', confirmMsg: (ci, co, n) => `ยืนยันการจอง เช็คอิน <span class="highlight">${ci}</span> เช็คเอาท์ <span class="highlight">${co}</span> จำนวน <span class="highlight">${n} คืน</span>\nรบกวนขอ ชื่อ–นามสกุล ผู้จอง และเบอร์โทรค่ะ` },
+                en: { title: 'Message Management Dashboard', create: 'Create New Message', searchPlaceholder: 'Search messages...', filterLabel: 'Filter:', all: 'All', house: 'Baan Jerkan', inn: 'Los Inn Nakhon', colName: 'Message Name', colType: 'Business', colExample: 'Example Message', colActions: 'Actions', editBtn: 'Edit', copyBtn: 'Copy', deleteBtn: 'Delete', noData: 'No messages yet. Click "Create New Message" to get started', noDataFiltered: 'No messages match your search or filter', clearFilters: 'Clear search', editModalTitle: 'Edit Message', addModalTitle: 'Create New Message', editModalSave: 'Save', editModalSaving: 'Saving...', editModalCancel: 'Cancel', confirmTitle: 'Confirm Deletion', confirmMessage: 'Are you sure?', confirmOk: 'Delete', confirmCancel: 'Cancel', copySuccess: 'Copied to clipboard', copyFail: 'Copy failed, please try again', copyEmpty: 'Please fill in the details before copying', deleteConfirm: (name) => `Delete "${name}"? This cannot be undone.`, deleteSuccess: 'Message deleted', deleteFail: 'Delete failed, please try again', createSuccess: 'New message created successfully', editSuccess: 'Message updated successfully', saveFail: 'Save failed. Please check your connection and try again', titleRequired: 'Please enter the Thai message name', orderSaved: 'New order saved', orderFail: 'Failed to save order, please try again', depositWarning: 'Deposit is greater than the total. Please double-check the amounts', loadErrorTitle: 'Cannot connect to the database', loadErrorDesc: 'Please check your internet connection and try again', retry: 'Retry', manageBusinesses: 'Manage Businesses', addBusinessTitle: 'Add New Business', editBusinessTitle: 'Edit Business', businessNameTH: 'Business Name (TH)', businessNameEN: 'Business Name (EN)', businessColor: 'Badge Color', addBusinessBtn: 'Add Business', businessLabel: 'Business', businessRequired: 'Please enter the Thai business name', businessSaved: 'Business saved', businessDeleted: 'Business deleted', businessDeleteFail: 'Failed to delete business, please try again', deleteBusinessConfirm: (name, count) => count > 0 ? `Delete business "${name}"? Its ${count} message(s) will move to "All"` : `Delete business "${name}"?`, confirmGeneratorTitle: 'Generate Booking Confirmation', confirmGeneratorDesc: 'Fill dates to generate message', checkinLabel: 'Check-in', checkoutLabel: 'Check-out', nightsLabel: 'Nights', confirmMsg: (ci, co, n) => `Booking confirmation: Check-in <span class="highlight">${ci}</span> • Check-out <span class="highlight">${co}</span> • <span class="highlight">${n} night(s)</span>\nPlease share the booker’s full name and phone number.` }
             };
             
+            // ธุรกิจเริ่มต้น: ใช้รหัสเดิม (house/inn) เพื่อให้ข้อความเก่าใช้งานได้ต่อโดยไม่ต้องย้ายข้อมูล
+            const DEFAULT_BUSINESSES = [
+                { id: 'house', order: 0, nameTH: 'บ้านเจอกัน', nameEN: 'Baan Jerkan', color: 'blue' },
+                { id: 'inn', order: 1, nameTH: 'ลอสอินน์นคร', nameEN: 'Los Inn Nakhon', color: 'green' }
+            ];
+            const BUSINESS_COLORS = {
+                blue:   { bg: '#E3F2FD', text: '#1565C0', dot: '#1976D2' },
+                green:  { bg: '#E8F5E9', text: '#2E7D32', dot: '#4CAF50' },
+                orange: { bg: '#FFF3E0', text: '#E65100', dot: '#FB8C00' },
+                purple: { bg: '#F3E5F5', text: '#6A1B9A', dot: '#8E24AA' },
+                red:    { bg: '#FDECEA', text: '#B71C1C', dot: '#E53935' },
+                teal:   { bg: '#E0F2F1', text: '#00695C', dot: '#00897B' },
+                pink:   { bg: '#FCE4EC', text: '#AD1457', dot: '#D81B60' },
+                amber:  { bg: '#FFF8E1', text: '#B26A00', dot: '#FFB300' }
+            };
+            const ALL_BADGE = { bg: '#ECEFF1', text: '#455A64', dot: '#78909C' };
+
             let allPresets = [];
+            let allBusinesses = [];
+            let currentBusiness = 'all';
             let currentSort = { by: 'order', dir: 'asc' };
             let editingPresetId = null;
+            let editingBusinessId = null;
+            let selectedBusinessColor = 'blue';
             let confirmCallback = null;
             let currentLang = 'th';
             let currentTone = 'krub';
             let draggedItem = null;
+
+            function bizName(b) { return (currentLang === 'en' && b.nameEN) ? b.nameEN : b.nameTH; }
+            function getBusiness(id) { return allBusinesses.find(b => b.id === id); }
+            // คืนข้อมูลป้ายกำกับ (สี + ชื่อ) ของธุรกิจ; รหัสที่ไม่รู้จักหรือ 'all' จะเป็นป้ายสีเทา "ทั้งหมด"
+            function bizBadge(propId) {
+                const b = getBusiness(propId);
+                if (!b) return { ...ALL_BADGE, label: UI_STRINGS[currentLang].all };
+                const c = BUSINESS_COLORS[b.color] || BUSINESS_COLORS.blue;
+                return { ...c, label: bizName(b) };
+            }
 
             async function seedInitialData() {
                 const batch = writeBatch(db);
@@ -430,6 +501,37 @@
             }
             async function deletePresetFromFirebase(id) {
                 await deleteDoc(doc(db, 'presets', id));
+            }
+            async function loadBusinessesFromFirebase() {
+                try {
+                    const q = query(businessesCollection, orderBy("order"));
+                    const snap = await getDocs(q);
+                    if (snap.empty) {
+                        const batch = writeBatch(db);
+                        DEFAULT_BUSINESSES.forEach(b => batch.set(doc(db, 'businesses', b.id), b));
+                        await batch.commit();
+                        return DEFAULT_BUSINESSES.map(b => ({ ...b }));
+                    }
+                    const list = [];
+                    snap.forEach(d => list.push(d.data()));
+                    return list;
+                } catch (e) {
+                    console.error("Failed to load businesses from Firestore", e);
+                    return null;
+                }
+            }
+            async function saveBusinessToFirebase(biz) {
+                await setDoc(doc(db, 'businesses', biz.id), biz);
+            }
+            // ลบธุรกิจ: ข้อความที่สังกัดธุรกิจนั้นจะถูกย้ายไปหมวด "ทั้งหมด" ในชุดคำสั่งเดียวกัน (ไม่มีข้อความหาย)
+            async function deleteBusinessAndReassign(id) {
+                const batch = writeBatch(db);
+                allPresets.filter(p => p.prop === id).forEach(p => {
+                    batch.update(doc(db, 'presets', p.id), { prop: 'all' });
+                });
+                batch.delete(doc(db, 'businesses', id));
+                await batch.commit();
+                allPresets.forEach(p => { if (p.prop === id) p.prop = 'all'; });
             }
             async function updateOrderInFirebase() {
                 const batch = writeBatch(db);
@@ -650,41 +752,34 @@ ${hShortFormat}`;
 
             function renderTable() {
                 const searchTerm = $searchInput.value.toLowerCase();
-                const filterType = $filterSelect.value;
                 const lang = currentLang;
 
                 let displayPresets = allPresets.filter(p => {
                     const title = p[`title${lang.toUpperCase()}`] || p.titleTH;
                     const content = p[`content${lang.toUpperCase()}`] || p.contentTH;
                     const matchesSearch = title.toLowerCase().includes(searchTerm) || (content && content.toLowerCase().includes(searchTerm));
-                    
-                    let finalMatchesFilter = false;
-                    if (filterType === 'all') {
-                        finalMatchesFilter = true;
-                    } else {
-                        if (p.prop === filterType || p.prop === 'all') {
-                            finalMatchesFilter = true;
-                        }
-                    }
 
-                    return matchesSearch && finalMatchesFilter;
+                    // แสดงข้อความของธุรกิจที่เลือก รวมถึงข้อความกลาง (prop 'all') ที่ใช้ได้กับทุกธุรกิจ
+                    const matchesBusiness = currentBusiness === 'all' || p.prop === currentBusiness || p.prop === 'all';
+
+                    return matchesSearch && matchesBusiness;
                 });
-                
+
                 if (currentSort.by !== 'order') {
+                    const keyVal = p => currentSort.by === 'title'
+                        ? (p[`title${lang.toUpperCase()}`] || p.titleTH || '')
+                        : (currentSort.by === 'prop' ? bizBadge(p.prop).label : (p[currentSort.by] || ''));
                     displayPresets.sort((a, b) => {
-                        const aVal = a[currentSort.by === 'title' ? `title${lang.toUpperCase()}` : currentSort.by] || '';
-                        const bVal = b[currentSort.by === 'title' ? `title${lang.toUpperCase()}` : currentSort.by] || '';
+                        const aVal = keyVal(a), bVal = keyVal(b);
                         if (currentSort.dir === 'asc') return aVal.localeCompare(bVal, lang, { sensitivity: 'base' });
                         return bVal.localeCompare(aVal, lang, { sensitivity: 'base' });
                     });
                 } else {
                     displayPresets.sort((a, b) => a.order - b.order);
                 }
-                
+
                 $tableBody.innerHTML = displayPresets.map(p => {
-                    const badgeClass = p.prop === 'house' ? 'badge-house' : (p.prop === 'inn' ? 'badge-inn' : 'bg-gray-200 text-gray-800');
-                    const dotClass = p.prop === 'house' ? 'dot-house' : (p.prop === 'inn' ? 'dot-inn' : 'bg-gray-500');
-                    const propText = p.prop === 'house' ? UI_STRINGS[lang].house : (p.prop === 'inn' ? UI_STRINGS[lang].inn : UI_STRINGS[lang].all);
+                    const badge = bizBadge(p.prop);
 
                     return `
                     <tr data-id="${p.id}" draggable="true" class="cursor-move">
@@ -694,7 +789,7 @@ ${hShortFormat}`;
                                     <button data-id="${p.id}" data-action="copy" class="btn-primary rounded-full w-8 h-8 flex items-center justify-center text-sm" title="${UI_STRINGS[currentLang].copyBtn}"><i class="far fa-copy"></i></button>
                                     <div class="expand-trigger cursor-pointer">
                                         <span>${p[`title${lang.toUpperCase()}`] || p.titleTH}</span>
-                                        <span class="text-xs font-semibold rounded-full px-2 py-1 ml-2 md:hidden ${badgeClass}">${propText}</span>
+                                        <span class="text-xs font-semibold rounded-full px-2 py-1 ml-2 md:hidden" style="background:${badge.bg};color:${badge.text}">${badge.label}</span>
                                     </div>
                                 </div>
                                 <i class="fas fa-chevron-down text-xs text-muted ml-2 expand-icon lg:hidden expand-trigger cursor-pointer"></i>
@@ -704,9 +799,9 @@ ${hShortFormat}`;
                             </div>
                         </td>
                         <td class="py-3 px-2 hidden md:table-cell">
-                             <span class="text-xs font-semibold rounded-full px-2 py-1 ${badgeClass}">
-                                 <span class="w-2 h-2 rounded-full inline-block mr-1 ${dotClass}"></span>
-                                 ${propText}
+                             <span class="text-xs font-semibold rounded-full px-2 py-1" style="background:${badge.bg};color:${badge.text}">
+                                 <span class="w-2 h-2 rounded-full inline-block mr-1" style="background:${badge.dot}"></span>
+                                 ${badge.label}
                              </span>
                         </td>
                         <td class="py-3 px-2 text-sm text-muted hidden lg:table-cell truncate max-w-xs">${applyTone(p[`content${lang.toUpperCase()}`] || p.contentTH)}</td>
@@ -726,7 +821,7 @@ ${hShortFormat}`;
                     </tr>
                     `;
                 }).join('') || (() => {
-                    const hasFilters = searchTerm || filterType !== 'all';
+                    const hasFilters = searchTerm || currentBusiness !== 'all';
                     return `<tr><td colspan="5" class="py-10 text-center text-muted">
                         <i class="fas fa-inbox text-3xl mb-2 block"></i>
                         <p>${hasFilters ? UI_STRINGS[lang].noDataFiltered : UI_STRINGS[lang].noData}</p>
@@ -738,14 +833,38 @@ ${hShortFormat}`;
                 if (clearFiltersBtn) {
                     clearFiltersBtn.addEventListener('click', () => {
                         $searchInput.value = '';
-                        $filterSelect.value = 'all';
                         updateSearchClearVisibility();
-                        renderTable();
+                        setBusiness('all');
                     });
                 }
 
                 addDragAndDropHandlers();
             }
+
+            function renderBusinessChips() {
+                const chips = [{ id: 'all', label: UI_STRINGS[currentLang].all, dot: null }]
+                    .concat(allBusinesses.map(b => ({
+                        id: b.id,
+                        label: bizName(b),
+                        dot: (BUSINESS_COLORS[b.color] || BUSINESS_COLORS.blue).dot
+                    })));
+                $businessChips.innerHTML = chips.map(c => `
+                    <button class="chip" data-business="${c.id}" aria-pressed="${c.id === currentBusiness}">
+                        ${c.dot ? `<span class="chip-dot" style="background:${c.dot}"></span>` : `<i class="fas fa-layer-group text-xs"></i>`}
+                        <span>${c.label}</span>
+                    </button>`).join('');
+            }
+            function setBusiness(id) {
+                currentBusiness = id;
+                localStorage.setItem('appBusiness', id);
+                renderBusinessChips();
+                renderTable();
+            }
+            $businessChips.addEventListener('click', (e) => {
+                const chip = e.target.closest('button[data-business]');
+                if (chip) setBusiness(chip.dataset.business);
+            });
+
             function fmtDDMMYY(d) {
                 const dt = new Date(d);
                 if(isNaN(dt) || !d) return '';
@@ -796,7 +915,15 @@ ${hShortFormat}`;
                 
                 $('#preset-title-th').value = isEditing ? preset.titleTH : '';
                 $('#preset-title-en').value = isEditing ? preset.titleEN || '' : '';
-                $('#preset-prop').value = isEditing ? preset.prop : 'all';
+
+                // เติมรายชื่อธุรกิจจากฐานข้อมูล; ข้อความใหม่ตั้งค่าเริ่มต้นเป็นธุรกิจที่กำลังดูอยู่
+                const propSelect = $('#preset-prop');
+                propSelect.innerHTML = `<option value="all">${UI_STRINGS[currentLang].all}</option>`
+                    + allBusinesses.map(b => `<option value="${b.id}"></option>`).join('');
+                allBusinesses.forEach(b => { propSelect.querySelector(`option[value="${b.id}"]`).textContent = bizName(b); });
+                propSelect.value = isEditing ? preset.prop : currentBusiness;
+                if (!propSelect.value) propSelect.value = 'all';
+
                 $('#preset-content-th').value = isEditing ? preset.contentTH : '';
                 $('#preset-content-en').value = isEditing ? preset.contentEN || '' : '';
 
@@ -830,6 +957,149 @@ ${hShortFormat}`;
                 $confirmModal.querySelector('div').classList.remove('scale-95');
             }
             function hideConfirmModal() { $confirmModal.classList.remove('flex', 'opacity-100'); $confirmModal.classList.add('hidden'); $confirmModal.querySelector('div').classList.add('scale-95'); confirmCallback = null; }
+
+            // =================================================================
+            // Business Management Modal
+            // =================================================================
+            function renderBusinessColorSwatches() {
+                $('#business-color-swatches').innerHTML = Object.entries(BUSINESS_COLORS).map(([key, c]) => `
+                    <button type="button" class="swatch ${key === selectedBusinessColor ? 'selected' : ''}" data-color="${key}" style="background:${c.dot}" aria-label="${key}"></button>
+                `).join('');
+            }
+            function renderBusinessList() {
+                $('#business-list').innerHTML = allBusinesses.map(b => {
+                    const c = BUSINESS_COLORS[b.color] || BUSINESS_COLORS.blue;
+                    const count = allPresets.filter(p => p.prop === b.id).length;
+                    return `
+                    <li class="flex items-center justify-between gap-2 p-2 rounded-lg border border-line">
+                        <span class="flex items-center gap-2 min-w-0">
+                            <span class="chip-dot flex-shrink-0" style="background:${c.dot}"></span>
+                            <span class="truncate">${bizName(b)}</span>
+                            <span class="text-xs text-muted flex-shrink-0">(${count})</span>
+                        </span>
+                        <span class="flex items-center gap-3 flex-shrink-0">
+                            <button data-biz-id="${b.id}" data-biz-action="edit" class="text-sm text-accent hover:text-accent-2" title="${UI_STRINGS[currentLang].editBtn}"><i class="fas fa-edit"></i></button>
+                            <button data-biz-id="${b.id}" data-biz-action="delete" class="text-sm text-red-500 hover:text-red-700" title="${UI_STRINGS[currentLang].deleteBtn}"><i class="fas fa-trash"></i></button>
+                        </span>
+                    </li>`;
+                }).join('');
+            }
+            function resetBusinessForm() {
+                editingBusinessId = null;
+                selectedBusinessColor = 'blue';
+                $('#business-name-th').value = '';
+                $('#business-name-en').value = '';
+                $('#business-name-th').classList.remove('invalid');
+                $('#business-name-error').classList.add('hidden');
+                $('#business-form-title').textContent = UI_STRINGS[currentLang].addBusinessTitle;
+                $('#business-form-save span').textContent = UI_STRINGS[currentLang].addBusinessBtn;
+                $('#business-form-cancel').classList.add('hidden');
+                renderBusinessColorSwatches();
+            }
+            function showBusinessModal() {
+                resetBusinessForm();
+                renderBusinessList();
+                $businessModal.classList.remove('hidden');
+                $businessModal.classList.add('flex', 'opacity-100');
+                $businessModal.querySelector('div').classList.remove('scale-95');
+            }
+            function hideBusinessModal() {
+                $businessModal.classList.remove('flex', 'opacity-100');
+                $businessModal.classList.add('hidden');
+                $businessModal.querySelector('div').classList.add('scale-95');
+                editingBusinessId = null;
+            }
+
+            $('#manage-business-btn').addEventListener('click', showBusinessModal);
+            $('#business-modal-close').addEventListener('click', hideBusinessModal);
+            $('#business-form-cancel').addEventListener('click', resetBusinessForm);
+            $('#business-color-swatches').addEventListener('click', (e) => {
+                const swatch = e.target.closest('button[data-color]');
+                if (!swatch) return;
+                selectedBusinessColor = swatch.dataset.color;
+                renderBusinessColorSwatches();
+            });
+
+            $('#business-list').addEventListener('click', (e) => {
+                const btn = e.target.closest('button[data-biz-action]');
+                if (!btn) return;
+                const biz = getBusiness(btn.dataset.bizId);
+                if (!biz) return;
+
+                if (btn.dataset.bizAction === 'edit') {
+                    editingBusinessId = biz.id;
+                    selectedBusinessColor = biz.color || 'blue';
+                    $('#business-name-th').value = biz.nameTH;
+                    $('#business-name-en').value = biz.nameEN || '';
+                    $('#business-form-title').textContent = UI_STRINGS[currentLang].editBusinessTitle;
+                    $('#business-form-save span').textContent = UI_STRINGS[currentLang].editModalSave;
+                    $('#business-form-cancel').classList.remove('hidden');
+                    renderBusinessColorSwatches();
+                    $('#business-name-th').focus();
+                } else if (btn.dataset.bizAction === 'delete') {
+                    const count = allPresets.filter(p => p.prop === biz.id).length;
+                    showConfirmModal(UI_STRINGS[currentLang].deleteBusinessConfirm(bizName(biz), count), async () => {
+                        try {
+                            await deleteBusinessAndReassign(biz.id);
+                            allBusinesses = allBusinesses.filter(b => b.id !== biz.id);
+                            if (currentBusiness === biz.id) currentBusiness = 'all';
+                            if (editingBusinessId === biz.id) resetBusinessForm();
+                            localStorage.setItem('appBusiness', currentBusiness);
+                            renderBusinessList();
+                            renderBusinessChips();
+                            renderTable();
+                            setToast(UI_STRINGS[currentLang].businessDeleted);
+                        } catch (err) {
+                            console.error("Error deleting business:", err);
+                            setToast(UI_STRINGS[currentLang].businessDeleteFail, 'error');
+                        }
+                    });
+                }
+            });
+
+            $('#business-form-save').addEventListener('click', async () => {
+                const saveBtn = $('#business-form-save');
+                const nameInput = $('#business-name-th');
+                const nameError = $('#business-name-error');
+                const nameTH = nameInput.value.trim();
+                if (!nameTH) {
+                    nameInput.classList.add('invalid');
+                    nameError.textContent = UI_STRINGS[currentLang].businessRequired;
+                    nameError.classList.remove('hidden');
+                    nameInput.focus();
+                    return;
+                }
+                nameInput.classList.remove('invalid');
+                nameError.classList.add('hidden');
+
+                saveBtn.disabled = true;
+                try {
+                    const existing = editingBusinessId ? getBusiness(editingBusinessId) : null;
+                    const biz = {
+                        id: existing ? existing.id : `biz-${Date.now()}`,
+                        order: existing ? existing.order : allBusinesses.length,
+                        nameTH: nameTH,
+                        nameEN: $('#business-name-en').value.trim(),
+                        color: selectedBusinessColor
+                    };
+                    await saveBusinessToFirebase(biz);
+                    if (existing) {
+                        Object.assign(existing, biz);
+                    } else {
+                        allBusinesses.push(biz);
+                    }
+                    resetBusinessForm();
+                    renderBusinessList();
+                    renderBusinessChips();
+                    renderTable();
+                    setToast(UI_STRINGS[currentLang].businessSaved);
+                } catch (err) {
+                    console.error("Error saving business:", err);
+                    setToast(UI_STRINGS[currentLang].saveFail, 'error');
+                } finally {
+                    saveBtn.disabled = false;
+                }
+            });
 
             function addDragAndDropHandlers() {
                 const rows = $$('#presets-table-body tr[draggable="true"]');
@@ -920,6 +1190,19 @@ ${hShortFormat}`;
                     $('#error-banner-desc').textContent = UI_STRINGS[lang].loadErrorDesc;
                     $('#error-retry-btn span').textContent = UI_STRINGS[lang].retry;
                 }
+
+                // Business selector and management modal labels
+                $('#manage-business-btn-text').textContent = UI_STRINGS[lang].manageBusinesses;
+                $('#business-modal-title').textContent = UI_STRINGS[lang].manageBusinesses;
+                $('#business-name-th-label').innerHTML = `${UI_STRINGS[lang].businessNameTH} <span class="text-red-500">*</span>`;
+                $('#business-name-en-label').textContent = UI_STRINGS[lang].businessNameEN;
+                $('#business-color-label').textContent = UI_STRINGS[lang].businessColor;
+                $('#business-form-cancel').textContent = UI_STRINGS[lang].editModalCancel;
+                $('#preset-prop-label').textContent = UI_STRINGS[lang].businessLabel;
+                $('#business-form-title').textContent = editingBusinessId ? UI_STRINGS[lang].editBusinessTitle : UI_STRINGS[lang].addBusinessTitle;
+                $('#business-form-save span').textContent = editingBusinessId ? UI_STRINGS[lang].editModalSave : UI_STRINGS[lang].addBusinessBtn;
+                renderBusinessChips();
+                if ($businessModal.classList.contains('flex')) renderBusinessList();
 
                 renderTable();
                 $('#confirmation-generator .ci-date').dispatchEvent(new Event('change'));
@@ -1025,16 +1308,16 @@ ${hShortFormat}`;
                 renderTable();
                 $searchInput.focus();
             });
-            $filterSelect.addEventListener('change', renderTable);
-
             // ปิด modal ด้วยปุ่ม Esc หรือคลิกพื้นหลัง
             document.addEventListener('keydown', (e) => {
                 if (e.key !== 'Escape') return;
                 if ($confirmModal.classList.contains('flex')) { hideConfirmModal(); }
                 else if ($presetModal.classList.contains('flex')) { hidePresetModal(); }
+                else if ($businessModal.classList.contains('flex')) { hideBusinessModal(); }
             });
             $presetModal.addEventListener('click', (e) => { if (e.target === $presetModal) hidePresetModal(); });
             $confirmModal.addEventListener('click', (e) => { if (e.target === $confirmModal) hideConfirmModal(); });
+            $businessModal.addEventListener('click', (e) => { if (e.target === $businessModal) hideBusinessModal(); });
             
             $tableBody.addEventListener('click', (e) => {
                 const button = e.target.closest('button[data-action]');
@@ -1112,8 +1395,10 @@ ${hShortFormat}`;
                 $errorBanner.classList.add('hidden');
                 renderSkeleton();
                 const connected = await connectFirebase();
-                const presets = connected ? await loadPresetsFromFirebase() : null;
-                if (presets === null) {
+                const [presets, businesses] = connected
+                    ? await Promise.all([loadPresetsFromFirebase(), loadBusinessesFromFirebase()])
+                    : [null, null];
+                if (presets === null || businesses === null) {
                     $tableBody.innerHTML = '';
                     $('#error-banner-title').textContent = UI_STRINGS[currentLang].loadErrorTitle;
                     $('#error-banner-desc').textContent = UI_STRINGS[currentLang].loadErrorDesc;
@@ -1123,6 +1408,11 @@ ${hShortFormat}`;
                 }
                 allPresets = presets;
                 allPresets.sort((a, b) => a.order - b.order);
+                allBusinesses = businesses;
+                allBusinesses.sort((a, b) => a.order - b.order);
+                // ถ้าธุรกิจที่เคยเลือกไว้ถูกลบไปแล้ว ให้กลับไปที่ "ทั้งหมด"
+                if (currentBusiness !== 'all' && !getBusiness(currentBusiness)) currentBusiness = 'all';
+                renderBusinessChips();
                 renderTable();
             }
             $errorRetryBtn.addEventListener('click', loadAndRender);
@@ -1131,6 +1421,7 @@ ${hShortFormat}`;
                 const savedTheme = localStorage.getItem('appTheme') || 'light';
                 const savedLang = localStorage.getItem('appLang') || 'th';
                 const savedTone = localStorage.getItem('appTone') || 'krub';
+                currentBusiness = localStorage.getItem('appBusiness') || 'all';
                 applyTheme(savedTheme);
 
                 // ตั้งค่า UI ทั้งหมดก่อน แล้วจึงโหลดข้อมูล เพื่อให้หน้าจอใช้งานได้ทันทีแม้ฐานข้อมูลตอบช้า
