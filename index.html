@@ -172,13 +172,12 @@
                     <p id="slip-desc" class="text-sm text-muted">กรอกข้อมูลลูกค้าและยอดเงินเพื่อสร้างข้อความแบบฟอร์ม</p>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
                         <label class="col-span-2 sm:col-span-2">
-                            <span id="slip-prop-label" class="text-xs text-muted">ที่พัก</span>
-                            <select id="slip-prop" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none">
-                                <option value="BJ">บ้านเจอกัน (BJ)</option>
-                                <option value="L1F">ลอสอินน์นคร ชั้น 1 (L1F)</option>
-                                <option value="L2F">ลอสอินน์นคร ชั้น 2 (L2F)</option>
-                                <option value="L3F">ลอสอินน์นคร ชั้น 3 (L3F)</option>
-                            </select>
+                            <span id="slip-business-label" class="text-xs text-muted">ธุรกิจ</span>
+                            <select id="slip-business" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none"></select>
+                        </label>
+                        <label class="col-span-2 sm:col-span-2" id="slip-unit-wrap">
+                            <span id="slip-prop-label" class="text-xs text-muted">ที่พัก/บริการ</span>
+                            <select id="slip-prop" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none"></select>
                         </label>
                         <label class="col-span-2 sm:col-span-2">
                             <span id="slip-channel-label" class="text-xs text-muted">ช่องทางการจอง</span>
@@ -195,15 +194,37 @@
                             <span id="slip-phone-label" class="text-xs text-muted">เบอร์โทรติดต่อ</span>
                             <input type="tel" id="slip-phone" inputmode="tel" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none" placeholder="เช่น 0812345678">
                         </label>
-                        <label class="col-span-2 sm:col-span-1">
+                        <!-- Travel-only fields -->
+                        <label class="travel-only hidden col-span-2 sm:col-span-1">
+                            <span id="slip-date-label" class="text-xs text-muted">วันเดินทาง</span>
+                            <input type="date" id="slip-date" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none">
+                        </label>
+                        <label class="travel-only hidden col-span-2 sm:col-span-1">
+                            <span id="slip-time-label" class="text-xs text-muted">เวลานัดรับ</span>
+                            <input type="time" id="slip-time" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none">
+                        </label>
+                        <label class="travel-only hidden col-span-2 sm:col-span-2">
+                            <span id="slip-pax-label" class="text-xs text-muted">จำนวนผู้โดยสาร</span>
+                            <input type="number" id="slip-pax" min="1" inputmode="numeric" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none" placeholder="เช่น 4">
+                        </label>
+                        <label class="travel-only hidden col-span-2 sm:col-span-2">
+                            <span id="slip-pickup-label" class="text-xs text-muted">จุดรับ</span>
+                            <input type="text" id="slip-pickup" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none" placeholder="เช่น สนามบินนครศรีฯ">
+                        </label>
+                        <label class="travel-only hidden col-span-2 sm:col-span-2">
+                            <span id="slip-dropoff-label" class="text-xs text-muted">จุดส่ง</span>
+                            <input type="text" id="slip-dropoff" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none" placeholder="เช่น บ้านเจอกัน">
+                        </label>
+                        <label class="col-span-2 sm:col-span-2">
                             <span id="slip-deposit-label" class="text-xs text-muted">ยอดมัดจำ (บาท)</span>
                             <input type="text" id="slip-deposit" inputmode="numeric" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none" placeholder="1,000">
                         </label>
-                        <label class="col-span-2 sm:col-span-1">
+                        <label class="col-span-2 sm:col-span-2">
                             <span id="slip-total-label" class="text-xs text-muted">ยอดรวม (บาท)</span>
                             <input type="text" id="slip-total" inputmode="numeric" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none" placeholder="2,500">
                         </label>
                     </div>
+                    <p id="slip-none-hint" class="hidden text-sm text-muted mt-3"><i class="fas fa-circle-info mr-1"></i><span>ธุรกิจนี้ยังไม่ได้ตั้งค่ารูปแบบสลิป — ตั้งค่าได้ที่ปุ่ม "จัดการธุรกิจ"</span></p>
                     <p id="slip-warning" class="field-error hidden"><i class="fas fa-triangle-exclamation mr-1"></i><span></span></p>
                 </div>
                 <div class="sm:w-2/5 flex flex-col flex-shrink-0">
@@ -323,6 +344,25 @@
                     <span id="business-color-label" class="block text-sm font-medium text-muted mb-1">สีป้ายกำกับ</span>
                     <div id="business-color-swatches" class="flex flex-wrap gap-2 mt-1"></div>
                 </div>
+                <div class="mt-3">
+                    <label for="business-slip-type" id="business-slip-type-label" class="block text-sm font-medium text-muted mb-1">รูปแบบสลิปยืนยัน (Final Slip)</label>
+                    <select id="business-slip-type" class="w-full p-2 rounded-lg border border-line focus:outline-none focus:ring-2 focus:ring-accent-2">
+                        <option value="none">ไม่ใช้สลิป</option>
+                        <option value="stay">ที่พัก (เช็คอิน–เช็คเอาต์)</option>
+                        <option value="travel">รับส่ง/ทัวร์ (จุดรับ–จุดส่ง)</option>
+                    </select>
+                </div>
+                <div id="business-units-wrap" class="mt-3 hidden">
+                    <span id="business-units-label" class="block text-sm font-medium text-muted mb-1">ยูนิต/บริการ (รหัสใช้ในบรรทัดสรุปท้ายสลิป)</span>
+                    <div id="business-units-rows" class="space-y-2 max-h-36 overflow-y-auto"></div>
+                    <button type="button" id="business-unit-add" class="text-accent text-sm hover:underline mt-2"><i class="fas fa-plus mr-1"></i><span>เพิ่มยูนิต/บริการ</span></button>
+                </div>
+                <details id="business-template-details" class="mt-3 hidden">
+                    <summary id="business-template-summary" class="text-sm text-accent cursor-pointer">ขั้นสูง: แก้ไขข้อความสลิปเอง</summary>
+                    <p id="business-template-hint" class="text-xs text-muted mt-2">เว้นว่างเพื่อใช้ข้อความมาตรฐาน • ตัวแปรที่ใช้ได้: {business} {unit} {service} {checkin} {checkout} {date} {time} {pickup} {dropoff} {pax} {name} {phone} {deposit} {total} {remain} {shortline}</p>
+                    <textarea id="business-template-th" rows="5" class="w-full p-2 mt-2 rounded-lg border border-line resize-y focus:outline-none focus:ring-2 focus:ring-accent-2 text-sm"></textarea>
+                    <textarea id="business-template-en" rows="5" class="w-full p-2 mt-2 rounded-lg border border-line resize-y focus:outline-none focus:ring-2 focus:ring-accent-2 text-sm"></textarea>
+                </details>
                 <div class="flex justify-end gap-2 mt-4">
                     <button id="business-form-cancel" class="btn-outline text-main py-2 px-4 rounded-full hidden">ยกเลิก</button>
                     <button id="business-form-save" class="btn-primary py-2 px-4 rounded-full"><i class="fas fa-plus mr-1"></i><span>เพิ่มธุรกิจ</span></button>
@@ -428,9 +468,26 @@
             
             // ธุรกิจเริ่มต้น: ใช้รหัสเดิม (house/inn) เพื่อให้ข้อความเก่าใช้งานได้ต่อโดยไม่ต้องย้ายข้อมูล
             const DEFAULT_BUSINESSES = [
-                { id: 'house', order: 0, nameTH: 'บ้านเจอกัน', nameEN: 'Baan Jerkan', color: 'blue' },
-                { id: 'inn', order: 1, nameTH: 'ลอสอินน์นคร', nameEN: 'Los Inn Nakhon', color: 'green' }
+                { id: 'house', order: 0, nameTH: 'บ้านเจอกัน', nameEN: 'Baan Jerkan', color: 'blue', slipType: 'stay', slipTemplateTH: '', slipTemplateEN: '', units: [
+                    { code: 'BJ', nameTH: 'บ้านเจอกัน', nameEN: 'Baan Jerkan' }
+                ] },
+                { id: 'inn', order: 1, nameTH: 'ลอสอินน์นคร', nameEN: 'Los Inn Nakhon', color: 'green', slipType: 'stay', slipTemplateTH: '', slipTemplateEN: '', units: [
+                    { code: 'L1F', nameTH: 'ลอสอินน์นคร ชั้น 1', nameEN: 'Los Inn Nakhon Fl. 1' },
+                    { code: 'L2F', nameTH: 'ลอสอินน์นคร ชั้น 2', nameEN: 'Los Inn Nakhon Fl. 2' },
+                    { code: 'L3F', nameTH: 'ลอสอินน์นคร ชั้น 3', nameEN: 'Los Inn Nakhon Fl. 3' }
+                ] }
             ];
+            // ข้อความสลิปมาตรฐานตามประเภทธุรกิจ; แต่ละธุรกิจแก้ไขเองได้ (ช่องขั้นสูงใน "จัดการธุรกิจ")
+            const BUILTIN_SLIP_TEMPLATES = {
+                stay: {
+                    th: `[ยืนยันการจองที่พัก - {unit}]\n📍 เช็คอิน: {checkin} (หลัง 14.00 น.)\n📍 เช็คเอาท์: {checkout} (ก่อน 12.00 น.)\n👤 ผู้จอง: {name}\n📞 เบอร์ติดต่อ: {phone}\n💰 สถานะ: มัดจำแล้ว {deposit}.- (ยอดคงเหลือ {remain}.- ชำระวันเข้าพัก)\n\n{shortline}`,
+                    en: `[Booking Confirmation - {unit}]\n📍 Check-in: {checkin} (After 14:00)\n📍 Check-out: {checkout} (Before 12:00)\n👤 Booker: {name}\n📞 Phone: {phone}\n💰 Status: Deposit paid {deposit} THB (Remaining {remain} THB to be paid on arrival)\n\n{shortline}`
+                },
+                travel: {
+                    th: `[ยืนยันการเดินทาง - {business}]\n🚐 บริการ: {service}\n📅 วันเดินทาง: {date}  ⏰ นัดรับ: {time} น.\n📍 จุดรับ: {pickup}\n🏁 จุดส่ง: {dropoff}\n👥 ผู้โดยสาร: {pax} ท่าน\n👤 ผู้จอง: {name}\n📞 เบอร์ติดต่อ: {phone}\n💰 สถานะ: มัดจำแล้ว {deposit}.- (ยอดคงเหลือ {remain}.- ชำระวันเดินทาง)\n\n{shortline}`,
+                    en: `[Travel Confirmation - {business}]\n🚐 Service: {service}\n📅 Travel date: {date}  ⏰ Pickup time: {time}\n📍 Pickup: {pickup}\n🏁 Drop-off: {dropoff}\n👥 Passengers: {pax}\n👤 Booker: {name}\n📞 Phone: {phone}\n💰 Status: Deposit paid {deposit} THB (Remaining {remain} THB to be paid on travel date)\n\n{shortline}`
+                }
+            };
             const BUSINESS_COLORS = {
                 blue:   { bg: '#E3F2FD', text: '#1565C0', dot: '#1976D2' },
                 green:  { bg: '#E8F5E9', text: '#2E7D32', dot: '#4CAF50' },
@@ -514,6 +571,25 @@
                     }
                     const list = [];
                     snap.forEach(d => list.push(d.data()));
+                    // Migration: ธุรกิจที่สร้างก่อนมีระบบสลิป ให้เติมค่าเริ่มต้น
+                    // (house/inn ได้ค่าสลิป "ที่พัก" ตามเดิม ธุรกิจอื่นเริ่มที่ "ไม่ใช้สลิป")
+                    const needsPatch = list.filter(b => !b.slipType);
+                    needsPatch.forEach(b => {
+                        const d = DEFAULT_BUSINESSES.find(x => x.id === b.id);
+                        b.slipType = d ? d.slipType : 'none';
+                        b.units = d ? d.units.map(u => ({ ...u })) : [];
+                        b.slipTemplateTH = '';
+                        b.slipTemplateEN = '';
+                    });
+                    if (needsPatch.length) {
+                        try {
+                            const batch = writeBatch(db);
+                            needsPatch.forEach(b => batch.set(doc(db, 'businesses', b.id), b));
+                            await batch.commit();
+                        } catch (e) {
+                            console.error("Failed to persist business slip migration", e);
+                        }
+                    }
                     return list;
                 } catch (e) {
                     console.error("Failed to load businesses from Firestore", e);
@@ -634,21 +710,33 @@
             }
 
             // =================================================================
-            // Final Slip Generator Logic
+            // Final Slip Generator Logic (multi-business, template-based)
             // =================================================================
             function initializeFinalSlipGenerator() {
+                const bizSelect = $('#slip-business');
+                const unitWrap = $('#slip-unit-wrap');
+                const unitSelect = $('#slip-prop');
+                const channelSelect = $('#slip-channel');
                 const nameInput = $('#slip-name');
                 const phoneInput = $('#slip-phone');
+                const dateInput = $('#slip-date');
+                const timeInput = $('#slip-time');
+                const paxInput = $('#slip-pax');
+                const pickupInput = $('#slip-pickup');
+                const dropoffInput = $('#slip-dropoff');
                 const depositInput = $('#slip-deposit');
                 const totalInput = $('#slip-total');
-                const propSelect = $('#slip-prop');
-                const channelSelect = $('#slip-channel');
                 const generatedEl = $('#slip-generated-text');
                 const copyBtn = $('#copy-slip-btn');
                 const warningEl = $('#slip-warning');
+                const noneHint = $('#slip-none-hint');
 
                 const ciInput = $('.ci-date');
                 const coInput = $('.co-date');
+
+                const escapeHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                const hl = v => `<span class="highlight">${escapeHtml(v)}</span>`;
+                const unitLabel = u => (currentLang === 'en' && u.nameEN) ? u.nameEN : u.nameTH;
 
                 // จัดรูปแบบตัวเลขเป็นหลักพัน (1,000) ระหว่างพิมพ์ และตัดอักขระที่ไม่ใช่ตัวเลขออก
                 function formatMoneyField(el) {
@@ -657,79 +745,110 @@
                 }
                 [depositInput, totalInput].forEach(el => el.addEventListener('input', () => formatMoneyField(el)));
 
-                function updateSlip() {
-                    const propCode = propSelect.value;
-                    const channel = channelSelect.value;
-                    const name = nameInput.value || 'ชื่อลูกค้า';
-                    const phone = phoneInput.value || 'เบอร์โทร';
-                    
-                    const rawDeposit = depositInput.value ? depositInput.value.replace(/,/g, '') : '';
-                    const rawTotal = totalInput.value ? totalInput.value.replace(/,/g, '') : '';
+                function selectedBiz() { return getBusiness(bizSelect.value); }
 
-                    const deposit = rawDeposit ? Number(rawDeposit).toLocaleString() : 'ยอดมัดจำ';
-                    let remain = 'ยอดคงเหลือ';
+                // เลือกข้อความสลิป: ใช้ template ที่ธุรกิจแก้เอง (ขั้นสูง) ก่อน ถ้าว่างใช้แบบมาตรฐานตามประเภท
+                function slipTemplate(biz) {
+                    const custom = currentLang === 'th' ? biz.slipTemplateTH : biz.slipTemplateEN;
+                    if (custom && custom.trim()) return custom;
+                    return BUILTIN_SLIP_TEMPLATES[biz.slipType][currentLang];
+                }
+
+                function refreshSlipUnits() {
+                    const biz = selectedBiz();
+                    const units = (biz && biz.units) || [];
+                    unitWrap.classList.toggle('hidden', units.length === 0);
+                    unitSelect.innerHTML = units.map((u, i) => `<option value="${i}"></option>`).join('');
+                    units.forEach((u, i) => {
+                        unitSelect.options[i].textContent = u.code ? `${unitLabel(u)} (${u.code})` : unitLabel(u);
+                    });
+                }
+
+                function refreshSlipBusinesses() {
+                    const prev = bizSelect.value;
+                    bizSelect.innerHTML = allBusinesses.map(b => `<option value="${b.id}"></option>`).join('');
+                    allBusinesses.forEach(b => { bizSelect.querySelector(`option[value="${b.id}"]`).textContent = bizName(b); });
+                    if (allBusinesses.some(b => b.id === prev)) {
+                        bizSelect.value = prev;
+                    } else {
+                        const firstSlip = allBusinesses.find(b => b.slipType && b.slipType !== 'none');
+                        if (firstSlip) bizSelect.value = firstSlip.id;
+                    }
+                    refreshSlipUnits();
+                    updateSlip();
+                }
+
+                function updateSlip() {
+                    const biz = selectedBiz();
+                    const hasSlip = !!(biz && biz.slipType && BUILTIN_SLIP_TEMPLATES[biz.slipType]);
+                    const isTravel = hasSlip && biz.slipType === 'travel';
+                    // ซ่อนช่องกรอกทั้งหมด (ยกเว้นตัวเลือกธุรกิจ) เมื่อธุรกิจนี้ไม่ใช้สลิป
+                    $$('#final-slip-generator .grid > label').forEach(el => {
+                        if (el.querySelector('#slip-business')) return;
+                        el.classList.toggle('hidden', !hasSlip);
+                    });
+                    if (hasSlip) {
+                        $$('#final-slip-generator .travel-only').forEach(el => el.classList.toggle('hidden', !isTravel));
+                        unitWrap.classList.toggle('hidden', !(biz.units && biz.units.length));
+                    }
+                    noneHint.classList.toggle('hidden', hasSlip || !biz);
+                    if (!hasSlip) {
+                        generatedEl.textContent = '...';
+                        warningEl.classList.add('hidden');
+                        return;
+                    }
+
+                    const th = currentLang === 'th';
+                    const units = biz.units || [];
+                    const unit = units[parseInt(unitSelect.value, 10)] || null;
+
+                    const name = nameInput.value.trim() || (th ? 'ชื่อลูกค้า' : 'Customer name');
+                    const phone = phoneInput.value.trim() || (th ? 'เบอร์โทร' : 'Phone');
+                    const rawDeposit = depositInput.value.replace(/,/g, '');
+                    const rawTotal = totalInput.value.replace(/,/g, '');
+                    const deposit = rawDeposit ? Number(rawDeposit).toLocaleString() : (th ? 'ยอดมัดจำ' : 'Deposit');
+                    let remain = th ? 'ยอดคงเหลือ' : 'Remaining';
                     if (rawDeposit && rawTotal) {
                         const r = Number(rawTotal) - Number(rawDeposit);
                         remain = r > 0 ? r.toLocaleString() : '0';
                     }
 
                     // เตือนเมื่อยอดมัดจำมากกว่ายอดรวม
-                    const overpaid = rawDeposit && rawTotal && Number(rawDeposit) > Number(rawTotal);
+                    const overpaid = !!(rawDeposit && rawTotal && Number(rawDeposit) > Number(rawTotal));
                     warningEl.classList.toggle('hidden', !overpaid);
                     if (overpaid) warningEl.querySelector('span').textContent = UI_STRINGS[currentLang].depositWarning;
-                    depositInput.classList.toggle('invalid', !!overpaid);
+                    depositInput.classList.toggle('invalid', overpaid);
 
-                    const shortDeposit = rawDeposit || 'ยอดมัดจำ';
-                    const shortTotal = rawTotal || 'ยอดรวม';
+                    const unitText = unit ? unitLabel(unit) : bizName(biz);
+                    const unitCode = (unit && unit.code) || (biz.nameEN || biz.nameTH).replace(/\s+/g, '').slice(0, 3).toUpperCase();
+                    const shortline = `${unitCode}|${channelSelect.value}|${name}|${phone}|${rawDeposit || (th ? 'ยอดมัดจำ' : 'Deposit')}/${rawTotal || (th ? 'ยอดรวม' : 'Total')}`;
 
-                    const ci = fmtDDMMYY(ciInput.value) || 'XX/XX/XX';
-                    const co = fmtDDMMYY(coInput.value) || 'XX/XX/XX';
+                    const values = {
+                        business: escapeHtml(bizName(biz)),
+                        unit: escapeHtml(unitText),
+                        service: escapeHtml(unitText),
+                        checkin: fmtDDMMYY(ciInput.value) || 'XX/XX/XX',
+                        checkout: fmtDDMMYY(coInput.value) || 'XX/XX/XX',
+                        date: fmtDDMMYY(dateInput.value) || 'XX/XX/XX',
+                        time: hl(timeInput.value || 'XX:XX'),
+                        pickup: hl(pickupInput.value.trim() || (th ? 'จุดรับ' : 'Pickup point')),
+                        dropoff: hl(dropoffInput.value.trim() || (th ? 'จุดส่ง' : 'Drop-off point')),
+                        pax: hl(paxInput.value || 'X'),
+                        name: hl(name),
+                        phone: hl(phone),
+                        deposit: hl(deposit),
+                        total: hl(rawTotal ? Number(rawTotal).toLocaleString() : (th ? 'ยอดรวม' : 'Total')),
+                        remain: hl(remain),
+                        shortline: hl(shortline)
+                    };
 
-                    let fullPropName = '';
-                    let fullPropNameEn = '';
-                    if (propCode === 'BJ') { fullPropName = 'บ้านเจอกัน'; fullPropNameEn = 'Baan Jerkan'; }
-                    else if (propCode === 'L1F') { fullPropName = 'ลอสอินน์นคร ชั้น 1'; fullPropNameEn = 'Los Inn Nakhon Fl. 1'; }
-                    else if (propCode === 'L2F') { fullPropName = 'ลอสอินน์นคร ชั้น 2'; fullPropNameEn = 'Los Inn Nakhon Fl. 2'; }
-                    else if (propCode === 'L3F') { fullPropName = 'ลอสอินน์นคร ชั้น 3'; fullPropNameEn = 'Los Inn Nakhon Fl. 3'; }
-
-                    const shortFormat = `${propCode}|${channel}|${name}|${phone}|${shortDeposit}/${shortTotal}`;
-
-                    // ใส่ Highlight โดยตรงลงใน Template แทนการใช้ replace() ทีหลัง เพื่อป้องกันบัคทับซ้อนกับตัวเลข
-                    const hName = `<span class="highlight">${name}</span>`;
-                    const hPhone = `<span class="highlight">${phone}</span>`;
-                    const hDeposit = `<span class="highlight">${deposit}</span>`;
-                    const hRemain = `<span class="highlight">${remain}</span>`;
-                    const hShortFormat = `<span class="highlight">${shortFormat}</span>`;
-
-                    let highlightedMsg = "";
-                    if(currentLang === 'th') {
-                        highlightedMsg = `[ยืนยันการจองที่พัก - ${fullPropName}]
-📍 เช็คอิน: ${ci} (หลัง 14.00 น.)
-📍 เช็คเอาท์: ${co} (ก่อน 12.00 น.)
-👤 ผู้จอง: ${hName}
-📞 เบอร์ติดต่อ: ${hPhone}
-💰 สถานะ: มัดจำแล้ว ${hDeposit}.- (ยอดคงเหลือ ${hRemain}.- ชำระวันเข้าพัก)
-
-${hShortFormat}`;
-                    } else {
-                        highlightedMsg = `[Booking Confirmation - ${fullPropNameEn}]
-📍 Check-in: ${ci} (After 14:00)
-📍 Check-out: ${co} (Before 12:00)
-👤 Booker: ${hName}
-📞 Phone: ${hPhone}
-💰 Status: Deposit paid ${hDeposit} THB (Remaining ${hRemain} THB to be paid on arrival)
-
-${hShortFormat}`;
-                    }
-                    
-                    generatedEl.innerHTML = highlightedMsg;
+                    generatedEl.innerHTML = escapeHtml(slipTemplate(biz))
+                        .replace(/\{(\w+)\}/g, (m, k) => (k in values) ? values[k] : m);
                 }
 
-                [nameInput, phoneInput, depositInput, totalInput, propSelect, channelSelect].forEach(el => el.addEventListener('input', updateSlip));
-                
-                // --- ลบ 2 บรรทัดเก่าออก ---
-                // ciInput.addEventListener('change', updateSlip);
-                // coInput.addEventListener('change', updateSlip);
+                [nameInput, phoneInput, depositInput, totalInput, dateInput, timeInput, paxInput, pickupInput, dropoffInput].forEach(el => el.addEventListener('input', updateSlip));
+                [channelSelect, unitSelect].forEach(el => el.addEventListener('change', updateSlip));
+                bizSelect.addEventListener('change', () => { refreshSlipUnits(); updateSlip(); });
 
                 copyBtn.addEventListener('click', () => {
                     const textToCopy = generatedEl.innerText;
@@ -740,13 +859,21 @@ ${hShortFormat}`;
                     }
                 });
 
-                // Listen to external change from language toggle
-                document.addEventListener('langChanged', updateSlip);
-                
-                // --- เพิ่มบรรทัดใหม่นี้เข้าไป ---
-                // ดักจับสัญญาณ 'datesSync' ที่ส่งมาจากกล่องด้านบน เพื่ออัปเดตสลิป
+                // อัปเดตเมื่อสลับภาษา, วันที่จากกล่องด้านบนเปลี่ยน, หรือรายชื่อธุรกิจเปลี่ยน
+                document.addEventListener('langChanged', refreshSlipBusinesses);
                 document.addEventListener('datesSync', updateSlip);
-                
+                document.addEventListener('businessesChanged', refreshSlipBusinesses);
+                // เมื่อผู้ใช้เลือกธุรกิจจากแถบ chips ให้สลิปสลับตามให้อัตโนมัติ
+                document.addEventListener('activeBusinessChanged', (e) => {
+                    if (e.detail && e.detail !== 'all' && getBusiness(e.detail)) {
+                        bizSelect.value = e.detail;
+                        refreshSlipUnits();
+                        updateSlip();
+                    }
+                });
+
+                const now = new Date();
+                dateInput.value = `${now.getFullYear()}-${('0' + (now.getMonth() + 1)).slice(-2)}-${('0' + now.getDate()).slice(-2)}`;
                 updateSlip();
             }
 
@@ -859,6 +986,8 @@ ${hShortFormat}`;
                 localStorage.setItem('appBusiness', id);
                 renderBusinessChips();
                 renderTable();
+                // แจ้งการ์ดสลิปให้สลับไปธุรกิจเดียวกันโดยอัตโนมัติ
+                document.dispatchEvent(new CustomEvent('activeBusinessChanged', { detail: id }));
             }
             $businessChips.addEventListener('click', (e) => {
                 const chip = e.target.closest('button[data-business]');
@@ -984,6 +1113,51 @@ ${hShortFormat}`;
                     </li>`;
                 }).join('');
             }
+            // --- Slip configuration inside the business form ---
+            function addUnitRow(u = {}) {
+                const row = document.createElement('div');
+                row.className = 'unit-row flex gap-2 items-center';
+                row.innerHTML = `
+                    <input type="text" class="unit-code w-20 p-2 text-sm rounded-lg border border-line focus:outline-none focus:ring-2 focus:ring-accent-2" maxlength="6">
+                    <input type="text" class="unit-name-th flex-1 min-w-0 p-2 text-sm rounded-lg border border-line focus:outline-none focus:ring-2 focus:ring-accent-2">
+                    <input type="text" class="unit-name-en flex-1 min-w-0 p-2 text-sm rounded-lg border border-line focus:outline-none focus:ring-2 focus:ring-accent-2">
+                    <button type="button" class="unit-remove text-red-500 hover:text-red-700 px-1 flex-shrink-0" aria-label="ลบแถว"><i class="fas fa-trash text-sm"></i></button>`;
+                const th = currentLang === 'th';
+                row.querySelector('.unit-code').placeholder = th ? 'รหัส' : 'Code';
+                row.querySelector('.unit-name-th').placeholder = th ? 'ชื่อ (TH) เช่น Airport Transfer' : 'Name (TH)';
+                row.querySelector('.unit-name-en').placeholder = th ? 'ชื่อ (EN)' : 'Name (EN)';
+                row.querySelector('.unit-code').value = u.code || '';
+                row.querySelector('.unit-name-th').value = u.nameTH || '';
+                row.querySelector('.unit-name-en').value = u.nameEN || '';
+                $('#business-units-rows').appendChild(row);
+            }
+            function collectUnits() {
+                return Array.from($$('#business-units-rows .unit-row'))
+                    .map(row => ({
+                        code: row.querySelector('.unit-code').value.trim().toUpperCase(),
+                        nameTH: row.querySelector('.unit-name-th').value.trim(),
+                        nameEN: row.querySelector('.unit-name-en').value.trim()
+                    }))
+                    .filter(u => u.nameTH || u.nameEN || u.code);
+            }
+            // แสดง/ซ่อนตัวแก้ไขยูนิตและ template ตามประเภทสลิป และตั้งตัวอย่าง template มาตรฐานเป็น placeholder
+            function updateSlipConfigVisibility() {
+                const type = $('#business-slip-type').value;
+                const hasSlip = type !== 'none';
+                $('#business-units-wrap').classList.toggle('hidden', !hasSlip);
+                $('#business-template-details').classList.toggle('hidden', !hasSlip);
+                if (hasSlip) {
+                    $('#business-template-th').placeholder = BUILTIN_SLIP_TEMPLATES[type].th;
+                    $('#business-template-en').placeholder = BUILTIN_SLIP_TEMPLATES[type].en;
+                }
+            }
+            $('#business-slip-type').addEventListener('change', updateSlipConfigVisibility);
+            $('#business-unit-add').addEventListener('click', () => addUnitRow());
+            $('#business-units-rows').addEventListener('click', (e) => {
+                const btn = e.target.closest('.unit-remove');
+                if (btn) btn.closest('.unit-row').remove();
+            });
+
             function resetBusinessForm() {
                 editingBusinessId = null;
                 selectedBusinessColor = 'blue';
@@ -994,6 +1168,12 @@ ${hShortFormat}`;
                 $('#business-form-title').textContent = UI_STRINGS[currentLang].addBusinessTitle;
                 $('#business-form-save span').textContent = UI_STRINGS[currentLang].addBusinessBtn;
                 $('#business-form-cancel').classList.add('hidden');
+                $('#business-slip-type').value = 'none';
+                $('#business-units-rows').innerHTML = '';
+                $('#business-template-th').value = '';
+                $('#business-template-en').value = '';
+                $('#business-template-details').removeAttribute('open');
+                updateSlipConfigVisibility();
                 renderBusinessColorSwatches();
             }
             function showBusinessModal() {
@@ -1031,6 +1211,12 @@ ${hShortFormat}`;
                     selectedBusinessColor = biz.color || 'blue';
                     $('#business-name-th').value = biz.nameTH;
                     $('#business-name-en').value = biz.nameEN || '';
+                    $('#business-slip-type').value = biz.slipType || 'none';
+                    $('#business-units-rows').innerHTML = '';
+                    (biz.units || []).forEach(u => addUnitRow(u));
+                    $('#business-template-th').value = biz.slipTemplateTH || '';
+                    $('#business-template-en').value = biz.slipTemplateEN || '';
+                    updateSlipConfigVisibility();
                     $('#business-form-title').textContent = UI_STRINGS[currentLang].editBusinessTitle;
                     $('#business-form-save span').textContent = UI_STRINGS[currentLang].editModalSave;
                     $('#business-form-cancel').classList.remove('hidden');
@@ -1048,6 +1234,7 @@ ${hShortFormat}`;
                             renderBusinessList();
                             renderBusinessChips();
                             renderTable();
+                            document.dispatchEvent(new Event('businessesChanged'));
                             setToast(UI_STRINGS[currentLang].businessDeleted);
                         } catch (err) {
                             console.error("Error deleting business:", err);
@@ -1080,7 +1267,11 @@ ${hShortFormat}`;
                         order: existing ? existing.order : allBusinesses.length,
                         nameTH: nameTH,
                         nameEN: $('#business-name-en').value.trim(),
-                        color: selectedBusinessColor
+                        color: selectedBusinessColor,
+                        slipType: $('#business-slip-type').value,
+                        units: collectUnits(),
+                        slipTemplateTH: $('#business-template-th').value.trim(),
+                        slipTemplateEN: $('#business-template-en').value.trim()
                     };
                     await saveBusinessToFirebase(biz);
                     if (existing) {
@@ -1092,6 +1283,7 @@ ${hShortFormat}`;
                     renderBusinessList();
                     renderBusinessChips();
                     renderTable();
+                    document.dispatchEvent(new Event('businessesChanged'));
                     setToast(UI_STRINGS[currentLang].businessSaved);
                 } catch (err) {
                     console.error("Error saving business:", err);
@@ -1173,16 +1365,36 @@ ${hShortFormat}`;
                 
                 // Update new slip generator labels
                 $('#slip-title').textContent = lang === 'th' ? 'ออกสลิปยืนยันการจอง (Final Slip)' : 'Generate Final Slip';
-                $('#slip-desc').textContent = lang === 'th' ? 'กรอกข้อมูลลูกค้าและยอดเงินเพื่อสร้างข้อความแบบฟอร์ม' : 'Fill in customer details and amounts to generate the slip';
-                $('#slip-prop-label').textContent = lang === 'th' ? 'ที่พัก' : 'Property';
+                $('#slip-desc').textContent = lang === 'th' ? 'เลือกธุรกิจแล้วกรอกข้อมูลลูกค้าเพื่อสร้างข้อความแบบฟอร์ม' : 'Select a business and fill in customer details to generate the slip';
+                $('#slip-business-label').textContent = lang === 'th' ? 'ธุรกิจ' : 'Business';
+                $('#slip-prop-label').textContent = lang === 'th' ? 'ที่พัก/บริการ' : 'Unit/Service';
                 if ($('#slip-channel-label')) $('#slip-channel-label').textContent = lang === 'th' ? 'ช่องทางการจอง' : 'Booking Channel';
                 $('#slip-name-label').textContent = lang === 'th' ? 'ชื่อผู้จอง' : 'Booker Name';
                 $('#slip-phone-label').textContent = lang === 'th' ? 'เบอร์โทรติดต่อ' : 'Phone Number';
+                $('#slip-date-label').textContent = lang === 'th' ? 'วันเดินทาง' : 'Travel Date';
+                $('#slip-time-label').textContent = lang === 'th' ? 'เวลานัดรับ' : 'Pickup Time';
+                $('#slip-pax-label').textContent = lang === 'th' ? 'จำนวนผู้โดยสาร' : 'Passengers';
+                $('#slip-pickup-label').textContent = lang === 'th' ? 'จุดรับ' : 'Pickup Point';
+                $('#slip-dropoff-label').textContent = lang === 'th' ? 'จุดส่ง' : 'Drop-off Point';
+                $('#slip-pickup').placeholder = lang === 'th' ? 'เช่น สนามบินนครศรีฯ' : 'e.g. Nakhon Airport';
+                $('#slip-dropoff').placeholder = lang === 'th' ? 'เช่น บ้านเจอกัน' : 'e.g. Baan Jerkan';
                 $('#slip-deposit-label').textContent = lang === 'th' ? 'ยอดมัดจำ (บาท)' : 'Deposit (THB)';
                 if ($('#slip-total-label')) $('#slip-total-label').textContent = lang === 'th' ? 'ยอดรวม (บาท)' : 'Total (THB)';
+                $('#slip-none-hint span').textContent = lang === 'th' ? 'ธุรกิจนี้ยังไม่ได้ตั้งค่ารูปแบบสลิป — ตั้งค่าได้ที่ปุ่ม "จัดการธุรกิจ"' : 'This business has no slip format yet — set it up in "Manage Businesses"';
                 $('#copy-slip-btn span').textContent = lang === 'th' ? 'คัดลอกสลิปยืนยัน' : 'Copy Final Slip';
                 $('#slip-name').placeholder = lang === 'th' ? 'เช่น คุณสมชาย' : 'e.g. Somchai';
                 $('#slip-phone').placeholder = lang === 'th' ? 'เช่น 0812345678' : 'e.g. 0812345678';
+
+                // Slip configuration labels in the business form
+                $('#business-slip-type-label').textContent = lang === 'th' ? 'รูปแบบสลิปยืนยัน (Final Slip)' : 'Final Slip Format';
+                const slipTypeOpts = $('#business-slip-type').options;
+                slipTypeOpts[0].textContent = lang === 'th' ? 'ไม่ใช้สลิป' : 'No slip';
+                slipTypeOpts[1].textContent = lang === 'th' ? 'ที่พัก (เช็คอิน–เช็คเอาต์)' : 'Accommodation (check-in/out)';
+                slipTypeOpts[2].textContent = lang === 'th' ? 'รับส่ง/ทัวร์ (จุดรับ–จุดส่ง)' : 'Transfer/Tour (pickup–drop-off)';
+                $('#business-units-label').textContent = lang === 'th' ? 'ยูนิต/บริการ (รหัสใช้ในบรรทัดสรุปท้ายสลิป)' : 'Units/Services (code appears in the slip summary line)';
+                $('#business-unit-add span').textContent = lang === 'th' ? 'เพิ่มยูนิต/บริการ' : 'Add unit/service';
+                $('#business-template-summary').textContent = lang === 'th' ? 'ขั้นสูง: แก้ไขข้อความสลิปเอง' : 'Advanced: customize slip text';
+                $('#business-template-hint').textContent = (lang === 'th' ? 'เว้นว่างเพื่อใช้ข้อความมาตรฐาน • ตัวแปรที่ใช้ได้: ' : 'Leave blank to use the standard text • Available variables: ') + '{business} {unit} {service} {checkin} {checkout} {date} {time} {pickup} {dropoff} {pax} {name} {phone} {deposit} {total} {remain} {shortline}';
 
                 const banner = $('#error-banner');
                 if (banner && !banner.classList.contains('hidden')) {
@@ -1414,6 +1626,7 @@ ${hShortFormat}`;
                 if (currentBusiness !== 'all' && !getBusiness(currentBusiness)) currentBusiness = 'all';
                 renderBusinessChips();
                 renderTable();
+                document.dispatchEvent(new Event('businessesChanged'));
             }
             $errorRetryBtn.addEventListener('click', loadAndRender);
 
