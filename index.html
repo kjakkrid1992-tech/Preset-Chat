@@ -123,6 +123,7 @@
                     <button id="tone-krub" aria-pressed="true">ครับ/นะครับ</button>
                 </div>
                 <button id="theme-toggle" aria-label="สลับธีมสว่าง/มืด" title="สลับธีมสว่าง/มืด" class="bg-card text-main rounded-full w-10 h-10 flex items-center justify-center shadow-main hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">🌙</button>
+                <button id="signout-btn" aria-label="ออกจากระบบ" title="ออกจากระบบ" class="hidden bg-card text-main rounded-full w-10 h-10 items-center justify-center shadow-main hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"><i class="fas fa-right-from-bracket"></i></button>
                 <button id="create-new-btn" class="btn-primary py-2 px-4 rounded-full shadow-main hover:scale-105 transition-transform duration-200">
                     <i class="fas fa-plus mr-2"></i> สร้างข้อความใหม่
                 </button>
@@ -402,6 +403,18 @@
         </div>
     </div>
 
+    <!-- Login Overlay: กันคนนอกเข้าใช้แดชบอร์ด (บังคับจริงอีกชั้นที่ Firestore Security Rules) -->
+    <div id="login-overlay" class="modal fixed inset-0 hidden items-center justify-center p-4 modal-overlay">
+        <div class="bg-card rounded-2xl shadow-lg border border-line p-8 w-full max-w-sm text-center">
+            <i class="fas fa-lock text-3xl text-accent mb-3"></i>
+            <h3 id="login-title" class="text-xl font-bold mb-2">เข้าสู่ระบบ</h3>
+            <p id="login-desc" class="text-sm text-muted mb-6">แดชบอร์ดนี้สำหรับผู้ดูแลเท่านั้น กรุณาเข้าสู่ระบบด้วยบัญชี Google ที่ได้รับอนุญาต</p>
+            <p id="login-denied" class="field-error hidden mb-4"></p>
+            <button id="login-btn" class="btn-primary w-full py-3 px-4 rounded-full"><i class="fab fa-google mr-2"></i><span>เข้าสู่ระบบด้วย Google</span></button>
+            <button id="login-signout-btn" class="btn-outline text-main w-full py-2 px-4 rounded-full mt-2 hidden">ออกจากระบบ</button>
+        </div>
+    </div>
+
     <div id="toast" class="toast"></div>
 
     <!-- Firebase SDKs -->
@@ -420,18 +433,22 @@
             };
             // โหลด Firebase SDK แบบ dynamic import: ถ้า CDN ล่มหรือออฟไลน์
             // หน้าเว็บและตัวสร้างข้อความยังใช้งานได้ และแสดงแบนเนอร์ให้กด "ลองใหม่" แทน
-            let db = null, presetsCollection = null, businessesCollection = null;
+            let db = null, presetsCollection = null, businessesCollection = null, auth = null;
             let collection, getDocs, doc, updateDoc, deleteDoc, writeBatch, query, orderBy, setDoc;
+            let onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut;
             async function connectFirebase() {
                 if (db) return true;
                 try {
-                    const [appMod, fsMod] = await Promise.all([
+                    const [appMod, fsMod, authMod] = await Promise.all([
                         import("https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"),
-                        import("https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js")
+                        import("https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js"),
+                        import("https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js")
                     ]);
                     ({ collection, getDocs, doc, updateDoc, deleteDoc, writeBatch, query, orderBy, setDoc } = fsMod);
+                    ({ onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } = authMod);
                     const app = appMod.initializeApp(firebaseConfig);
                     db = fsMod.getFirestore(app);
+                    auth = authMod.getAuth(app);
                     presetsCollection = collection(db, 'presets');
                     businessesCollection = collection(db, 'businesses');
                     return true;
@@ -1507,6 +1524,14 @@
                     $('#error-retry-btn span').textContent = UI_STRINGS[lang].retry;
                 }
 
+                // Login overlay labels
+                $('#login-title').textContent = lang === 'th' ? 'เข้าสู่ระบบ' : 'Sign in';
+                $('#login-desc').textContent = lang === 'th' ? 'แดชบอร์ดนี้สำหรับผู้ดูแลเท่านั้น กรุณาเข้าสู่ระบบด้วยบัญชี Google ที่ได้รับอนุญาต' : 'This dashboard is for administrators only. Please sign in with an authorized Google account';
+                $('#login-btn span').textContent = lang === 'th' ? 'เข้าสู่ระบบด้วย Google' : 'Sign in with Google';
+                $('#login-signout-btn').textContent = lang === 'th' ? 'ออกจากระบบ' : 'Sign out';
+                $('#signout-btn').title = lang === 'th' ? 'ออกจากระบบ' : 'Sign out';
+                if (typeof updateAuthUI === 'function' && authGateStarted) updateAuthUI();
+
                 // Business selector and management modal labels
                 $('#manage-business-btn-text').textContent = UI_STRINGS[lang].manageBusinesses;
                 $('#business-modal-title').textContent = UI_STRINGS[lang].manageBusinesses;
@@ -1707,13 +1732,62 @@
             const $errorBanner = $('#error-banner');
             const $errorRetryBtn = $('#error-retry-btn');
 
-            async function loadAndRender() {
+            // =================================================================
+            // Auth Gate: อนุญาตเฉพาะบัญชี Google ในรายชื่อนี้เท่านั้น
+            // หมายเหตุ: รายชื่อนี้เป็นแค่ด่านหน้าจอ (UX) — การบังคับจริงอยู่ที่
+            // Firestore Security Rules ซึ่งต้องระบุอีเมลชุดเดียวกัน
+            // =================================================================
+            const ALLOWED_EMAILS = ['jackiiz0358@gmail.com', 'k.jakkrid1992@gmail.com'];
+            let authUser = null;
+            let authGateStarted = false;
+            const isAllowed = user => !!(user && user.email && ALLOWED_EMAILS.includes(user.email.toLowerCase()));
+
+            function updateAuthUI() {
+                const overlay = $('#login-overlay');
+                const allowed = isAllowed(authUser);
+                $('#signout-btn').classList.toggle('hidden', !allowed);
+                $('#signout-btn').classList.toggle('flex', allowed);
+                if (allowed) {
+                    overlay.classList.remove('flex');
+                    overlay.classList.add('hidden');
+                    return;
+                }
+                overlay.classList.remove('hidden');
+                overlay.classList.add('flex');
+                // login แล้วแต่ไม่อยู่ในรายชื่อ: แจ้งชื่อบัญชีและให้ปุ่มออกจากระบบ
+                const wrongAccount = !!authUser;
+                const deniedEl = $('#login-denied');
+                deniedEl.classList.toggle('hidden', !wrongAccount);
+                if (wrongAccount) {
+                    deniedEl.textContent = currentLang === 'th'
+                        ? `บัญชี ${authUser.email} ไม่มีสิทธิ์เข้าใช้แดชบอร์ดนี้`
+                        : `Account ${authUser.email} is not allowed to access this dashboard`;
+                }
+                $('#login-signout-btn').classList.toggle('hidden', !wrongAccount);
+            }
+
+            $('#login-btn').addEventListener('click', async () => {
+                if (!auth) return;
+                try {
+                    await signInWithPopup(auth, new GoogleAuthProvider());
+                } catch (e) {
+                    console.error("Sign-in failed", e);
+                    if (e && e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') {
+                        setToast(currentLang === 'th' ? 'เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่' : 'Sign-in failed, please try again', 'error');
+                    }
+                }
+            });
+            async function doSignOut() {
+                if (!auth) return;
+                try { await signOut(auth); } catch (e) { console.error("Sign-out failed", e); }
+            }
+            $('#signout-btn').addEventListener('click', doSignOut);
+            $('#login-signout-btn').addEventListener('click', doSignOut);
+
+            async function loadData() {
                 $errorBanner.classList.add('hidden');
                 renderSkeleton();
-                const connected = await connectFirebase();
-                const [presets, businesses] = connected
-                    ? await Promise.all([loadPresetsFromFirebase(), loadBusinessesFromFirebase()])
-                    : [null, null];
+                const [presets, businesses] = await Promise.all([loadPresetsFromFirebase(), loadBusinessesFromFirebase()]);
                 if (presets === null || businesses === null) {
                     $tableBody.innerHTML = '';
                     $('#error-banner-title').textContent = UI_STRINGS[currentLang].loadErrorTitle;
@@ -1731,6 +1805,37 @@
                 renderBusinessChips();
                 renderTable();
                 document.dispatchEvent(new Event('businessesChanged'));
+            }
+
+            async function loadAndRender() {
+                $errorBanner.classList.add('hidden');
+                renderSkeleton();
+                const connected = await connectFirebase();
+                if (!connected) {
+                    $tableBody.innerHTML = '';
+                    $('#error-banner-title').textContent = UI_STRINGS[currentLang].loadErrorTitle;
+                    $('#error-banner-desc').textContent = UI_STRINGS[currentLang].loadErrorDesc;
+                    $errorRetryBtn.querySelector('span').textContent = UI_STRINGS[currentLang].retry;
+                    $errorBanner.classList.remove('hidden');
+                    return;
+                }
+                if (!authGateStarted) {
+                    // ฟังสถานะ login: เข้าระบบด้วยบัญชีที่อนุญาตแล้วจึงโหลดข้อมูล
+                    authGateStarted = true;
+                    onAuthStateChanged(auth, (user) => {
+                        authUser = user;
+                        updateAuthUI();
+                        if (isAllowed(user)) {
+                            loadData();
+                        } else {
+                            allPresets = [];
+                            allBusinesses = [];
+                            renderSkeleton();
+                        }
+                    });
+                } else if (isAllowed(authUser)) {
+                    loadData();
+                }
             }
             $errorRetryBtn.addEventListener('click', loadAndRender);
 
