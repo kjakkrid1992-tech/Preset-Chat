@@ -97,6 +97,15 @@
         tr.is-expanded .expand-icon {
             transform: rotate(180deg);
         }
+        /* แสดงวันที่แบบ วัน/เดือน/ปี (DD/MM/YYYY) ทับช่อง input type=date
+           ตอนโฟกัส/เปิดปฏิทิน จะกลับไปแสดงแบบของเบราว์เซอร์เพื่อให้แก้ไขได้ */
+        .date-dmy { position: relative; }
+        .date-dmy input[type="date"] { color: transparent; }
+        .date-dmy input[type="date"]::-webkit-datetime-edit { color: transparent; }
+        .date-dmy input[type="date"]:focus { color: var(--text); }
+        .date-dmy input[type="date"]:focus::-webkit-datetime-edit { color: var(--text); }
+        .date-dmy .date-dmy-text { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.875rem; color: var(--text); }
+        .date-dmy input[type="date"]:focus ~ .date-dmy-text { display: none; }
     </style>
 </head>
 <body class="bg-page text-main" data-theme="light">
@@ -118,6 +127,14 @@
                     <i class="fas fa-plus mr-2"></i> สร้างข้อความใหม่
                 </button>
             </div>
+        </div>
+
+        <!-- Business Selector (แถบเลือกธุรกิจ อยู่บนสุดของหน้า) -->
+        <div class="flex flex-wrap items-center gap-2 mb-6">
+            <div id="business-chips" class="flex flex-wrap items-center gap-2" role="group" aria-label="เลือกธุรกิจ"></div>
+            <button id="manage-business-btn" class="chip" title="เพิ่ม แก้ไข หรือลบธุรกิจ">
+                <i class="fas fa-gear"></i><span id="manage-business-btn-text">จัดการธุรกิจ</span>
+            </button>
         </div>
 
         <!-- Connection Error Banner -->
@@ -143,7 +160,10 @@
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
                         <label>
                             <span id="generator-checkin-label" class="text-xs text-muted">เช็คอิน</span>
-                            <input type="date" class="ci-date text-sm p-2 rounded-lg border border-line w-full">
+                            <div class="date-dmy">
+                                <input type="date" class="ci-date text-sm p-2 rounded-lg border border-line w-full">
+                                <span class="date-dmy-text" aria-hidden="true"></span>
+                            </div>
                         </label>
                         <label>
                             <span id="generator-nights-label" class="text-xs text-muted">คืน</span>
@@ -151,7 +171,10 @@
                         </label>
                         <label class="col-span-2 sm:col-span-1">
                             <span id="generator-checkout-label" class="text-xs text-muted">เช็คเอาต์</span>
-                            <input type="date" class="co-date text-sm p-2 rounded-lg border border-line w-full">
+                            <div class="date-dmy">
+                                <input type="date" class="co-date text-sm p-2 rounded-lg border border-line w-full">
+                                <span class="date-dmy-text" aria-hidden="true"></span>
+                            </div>
                         </label>
                     </div>
                 </div>
@@ -197,7 +220,10 @@
                         <!-- Travel-only fields -->
                         <label class="travel-only hidden col-span-2 sm:col-span-1">
                             <span id="slip-date-label" class="text-xs text-muted">วันเดินทาง</span>
-                            <input type="date" id="slip-date" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none">
+                            <div class="date-dmy">
+                                <input type="date" id="slip-date" class="text-sm p-2 rounded-lg border border-line w-full focus:ring-2 focus:ring-accent-2 focus:outline-none">
+                                <span class="date-dmy-text" aria-hidden="true"></span>
+                            </div>
                         </label>
                         <label class="travel-only hidden col-span-2 sm:col-span-1">
                             <span id="slip-time-label" class="text-xs text-muted">เวลานัดรับ</span>
@@ -238,13 +264,6 @@
 
         <!-- Preset Management Table -->
         <div class="bg-card rounded-2xl shadow-main border border-line p-4 md:p-6 overflow-x-auto">
-            <!-- Business Selector -->
-            <div class="flex flex-wrap items-center gap-2 mb-4">
-                <div id="business-chips" class="flex flex-wrap items-center gap-2" role="group" aria-label="เลือกธุรกิจ"></div>
-                <button id="manage-business-btn" class="chip" title="เพิ่ม แก้ไข หรือลบธุรกิจ">
-                    <i class="fas fa-gear"></i><span id="manage-business-btn-text">จัดการธุรกิจ</span>
-                </button>
-            </div>
             <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
                 <div class="relative w-full sm:w-auto">
                     <input type="text" id="search-input" placeholder="ค้นหาข้อความ..." class="w-full pl-10 pr-9 py-2 rounded-full text-main border border-line focus:outline-none focus:ring-2 focus:ring-accent-2">
@@ -647,6 +666,22 @@
                 // ใช้วันที่ตามเวลาท้องถิ่น ไม่ใช่ UTC เพื่อไม่ให้วันเพี้ยนสำหรับเขตเวลาไทย (UTC+7)
                 const toISO = d => `${d.getFullYear()}-${('0' + (d.getMonth() + 1)).slice(-2)}-${('0' + d.getDate()).slice(-2)}`;
 
+                // เก็บค่าที่กรอกไว้ใน localStorage: มือถือมักรีโหลดหน้าเมื่อสลับแอปไปตอบลูกค้า
+                // ค่าที่เก็บไว้จะถูกกู้คืนอัตโนมัติ (ภายใน 24 ชม.) จะได้ไม่ต้องกรอกใหม่
+                const GEN_STATE_KEY = 'confirmGenState';
+                function saveGenState() {
+                    try {
+                        localStorage.setItem(GEN_STATE_KEY, JSON.stringify({ ts: Date.now(), ci: ciInput.value, nights: nightsInput.value, co: coInput.value }));
+                    } catch (e) { /* โหมดส่วนตัวบางเครื่องเขียน localStorage ไม่ได้ */ }
+                }
+                function loadGenState() {
+                    try {
+                        const s = JSON.parse(localStorage.getItem(GEN_STATE_KEY));
+                        if (s && s.ts && (Date.now() - s.ts) < 24 * 60 * 60 * 1000) return s;
+                    } catch (e) {}
+                    return null;
+                }
+
                 function updateMessage() {
                     const ci = ciInput.value;
                     const co = coInput.value;
@@ -658,6 +693,8 @@
                     } else {
                         generatedTextEl.textContent = '...';
                     }
+                    refreshDateDisplays();
+                    saveGenState();
                 }
 
                 function onCiOrNightsChange() {
@@ -705,7 +742,14 @@
                     }
                 });
 
-                ciInput.value = toISO(new Date());
+                const savedGen = loadGenState();
+                if (savedGen && savedGen.ci) {
+                    ciInput.value = savedGen.ci;
+                    if (savedGen.nights) nightsInput.value = savedGen.nights;
+                    if (savedGen.co) coInput.value = savedGen.co;
+                } else {
+                    ciInput.value = toISO(new Date());
+                }
                 onCiOrNightsChange();
             }
 
@@ -745,6 +789,30 @@
                 }
                 [depositInput, totalInput].forEach(el => el.addEventListener('input', () => formatMoneyField(el)));
 
+                // เก็บค่าฟอร์มสลิปไว้ใน localStorage เช่นเดียวกับกล่องยืนยันการจอง
+                // เพื่อไม่ให้ข้อมูลหายเมื่อสลับแอปไปตอบลูกค้าแล้วหน้าเว็บถูกรีโหลด
+                const SLIP_STATE_KEY = 'slipFormState';
+                function saveSlipState() {
+                    try {
+                        localStorage.setItem(SLIP_STATE_KEY, JSON.stringify({
+                            ts: Date.now(), biz: bizSelect.value, unit: unitSelect.value, channel: channelSelect.value,
+                            name: nameInput.value, phone: phoneInput.value, date: dateInput.value, time: timeInput.value,
+                            pax: paxInput.value, pickup: pickupInput.value, dropoff: dropoffInput.value,
+                            deposit: depositInput.value, total: totalInput.value
+                        }));
+                    } catch (e) { /* โหมดส่วนตัวบางเครื่องเขียน localStorage ไม่ได้ */ }
+                }
+                function loadSlipState() {
+                    try {
+                        const s = JSON.parse(localStorage.getItem(SLIP_STATE_KEY));
+                        if (s && s.ts && (Date.now() - s.ts) < 24 * 60 * 60 * 1000) return s;
+                    } catch (e) {}
+                    return null;
+                }
+                const savedSlip = loadSlipState();
+                // ยูนิต/บริการจะกู้คืนได้หลังรายชื่อธุรกิจโหลดเสร็จ จึงพักค่าไว้ก่อน
+                let pendingUnitRestore = savedSlip ? savedSlip.unit : null;
+
                 function selectedBiz() { return getBusiness(bizSelect.value); }
 
                 // เลือกข้อความสลิป: ใช้ template ที่ธุรกิจแก้เอง (ขั้นสูง) ก่อน ถ้าว่างใช้แบบมาตรฐานตามประเภท
@@ -762,10 +830,14 @@
                     units.forEach((u, i) => {
                         unitSelect.options[i].textContent = u.code ? `${unitLabel(u)} (${u.code})` : unitLabel(u);
                     });
+                    if (units.length && pendingUnitRestore != null) {
+                        if (unitSelect.querySelector(`option[value="${pendingUnitRestore}"]`)) unitSelect.value = pendingUnitRestore;
+                        pendingUnitRestore = null;
+                    }
                 }
 
                 function refreshSlipBusinesses() {
-                    const prev = bizSelect.value;
+                    const prev = bizSelect.value || (savedSlip && savedSlip.biz) || '';
                     bizSelect.innerHTML = allBusinesses.map(b => `<option value="${b.id}"></option>`).join('');
                     allBusinesses.forEach(b => { bizSelect.querySelector(`option[value="${b.id}"]`).textContent = bizName(b); });
                     if (allBusinesses.some(b => b.id === prev)) {
@@ -795,6 +867,8 @@
                     if (!hasSlip) {
                         generatedEl.textContent = '...';
                         warningEl.classList.add('hidden');
+                        refreshDateDisplays();
+                        saveSlipState();
                         return;
                     }
 
@@ -844,11 +918,13 @@
 
                     generatedEl.innerHTML = escapeHtml(slipTemplate(biz))
                         .replace(/\{(\w+)\}/g, (m, k) => (k in values) ? values[k] : m);
+                    refreshDateDisplays();
+                    saveSlipState();
                 }
 
                 [nameInput, phoneInput, depositInput, totalInput, dateInput, timeInput, paxInput, pickupInput, dropoffInput].forEach(el => el.addEventListener('input', updateSlip));
                 [channelSelect, unitSelect].forEach(el => el.addEventListener('change', updateSlip));
-                bizSelect.addEventListener('change', () => { refreshSlipUnits(); updateSlip(); });
+                bizSelect.addEventListener('change', () => { pendingUnitRestore = null; refreshSlipUnits(); updateSlip(); });
 
                 copyBtn.addEventListener('click', () => {
                     const textToCopy = generatedEl.innerText;
@@ -874,6 +950,18 @@
 
                 const now = new Date();
                 dateInput.value = `${now.getFullYear()}-${('0' + (now.getMonth() + 1)).slice(-2)}-${('0' + now.getDate()).slice(-2)}`;
+                if (savedSlip) {
+                    channelSelect.value = savedSlip.channel || channelSelect.value;
+                    nameInput.value = savedSlip.name || '';
+                    phoneInput.value = savedSlip.phone || '';
+                    if (savedSlip.date) dateInput.value = savedSlip.date;
+                    timeInput.value = savedSlip.time || '';
+                    paxInput.value = savedSlip.pax || '';
+                    pickupInput.value = savedSlip.pickup || '';
+                    dropoffInput.value = savedSlip.dropoff || '';
+                    depositInput.value = savedSlip.deposit || '';
+                    totalInput.value = savedSlip.total || '';
+                }
                 updateSlip();
             }
 
@@ -994,6 +1082,22 @@
                 if (chip) setBusiness(chip.dataset.business);
             });
 
+            // แสดงวันที่แบบ วัน/เดือน/ปี ค.ศ. เต็ม (18/07/2026) ทับช่อง input type=date
+            function fmtDDMMYYYY(v) {
+                if (!v) return '';
+                const [y, m, d] = v.split('-');
+                return (y && m && d) ? `${d}/${m}/${y}` : '';
+            }
+            function refreshDateDisplays() {
+                $$('.date-dmy').forEach(wrap => {
+                    const input = wrap.querySelector('input[type="date"]');
+                    const text = wrap.querySelector('.date-dmy-text');
+                    if (input && text) text.textContent = fmtDDMMYYYY(input.value);
+                });
+            }
+            document.addEventListener('change', (e) => {
+                if (e.target.matches('.date-dmy input[type="date"]')) refreshDateDisplays();
+            });
             function fmtDDMMYY(d) {
                 const dt = new Date(d);
                 if(isNaN(dt) || !d) return '';
